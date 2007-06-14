@@ -41,5 +41,36 @@ int main()
   
   fclose(fp);
   
+  /*  png_destroy_read_struct(&png_ptr); */
+  
+  FILE *fw = fopen("out.png", "wb");
+  
+  png_structp pngw_ptr = png_create_write_struct
+    (PNG_LIBPNG_VER_STRING, NULL,
+     NULL, NULL);
+  png_init_io(pngw_ptr, fw);
+  png_infop infow_ptr = png_create_info_struct(pngw_ptr);  
+  
+  if (setjmp(png_jmpbuf(pngw_ptr)))
+    {
+      /* If we get here, we had a problem reading the file */
+      printf("ERROR\n");
+    }
+  
+  /* First pixel red */
+  row_pointers[0][0] = 255;
+  row_pointers[0][1] = 0;
+  row_pointers[0][2] = 0;
+  
+  infow_ptr->height = info_ptr->height;
+  infow_ptr->width = info_ptr->width;
+  //infow_ptr = info_ptr;
+
+  //png_write_image(pngw_ptr, row_pointers);
+  png_write_png(pngw_ptr, infow_ptr, PNG_TRANSFORM_IDENTITY, png_voidp_NULL);
+  png_write_end(pngw_ptr, infow_ptr);
+  
+  fclose(fw);
+  
   return EXIT_SUCCESS;
 }
