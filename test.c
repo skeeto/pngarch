@@ -2,11 +2,42 @@
 #include <stdlib.h>
 #include <png.h>
 
-int width = 200;
+int width = 100;
 int data_size;
 
 int main()
 {
+  png_bytep *row_pointers;
+
+  int rp_size = 64;
+  data_size = 0;
+
+  row_pointers = (png_bytep *)malloc(sizeof(png_bytep) * rp_size);
+  
+  size_t amt;
+  while (!feof(stdin))
+    {
+      row_pointers[data_size] = (png_bytep)malloc(width * 3);
+      amt = fread(row_pointers[data_size], 1, width * 3, stdin);
+      data_size++;
+      if (data_size > rp_size)
+	{
+	  rp_size *= 2;
+	  row_pointers = (png_bytep *)
+	    realloc(row_pointers, sizeof(png_bytep) * rp_size);
+	}
+    }
+  
+  if (amt < width * 3)
+    {
+      int i;
+      for (i = amt; i < width * 3; i++)
+	{
+	  row_pointers[data_size - 1][i+0] = 0;
+	  row_pointers[data_size - 1][i+1] = 0;
+	  row_pointers[data_size - 1][i+2] = 0;
+	}
+    }
   
   FILE *fw = fopen("out.png", "wb");
   
@@ -19,9 +50,9 @@ int main()
   
   /* Set image meta data. */
   infow_ptr->width = width;
-  infow_ptr->height = 1;
+  infow_ptr->height = data_size;
   infow_ptr->valid = 0;
-  infow_ptr->rowbytes = 3;
+  infow_ptr->rowbytes = width * 3;
   infow_ptr->palette = NULL;
   infow_ptr->num_palette = 0;
   infow_ptr->num_trans = 0;
@@ -35,11 +66,6 @@ int main()
   
   if (setjmp(png_jmpbuf(pngw_ptr)))
     printf("[write_png_file] Error during write\n");
-
-  png_bytep row_pointers[3];
-  row_pointers[0][0] = 0;
-  row_pointers[0][1] = 0;
-  row_pointers[0][2] = 0;
 
   png_write_image(pngw_ptr, row_pointers);
   png_write_end(pngw_ptr, NULL);
