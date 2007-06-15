@@ -2,8 +2,9 @@
 #include <stdlib.h>
 #include <png.h>
 
+#include "datpng.h"
 
-int width = 800;
+int width = 100;
 int data_size;
 
 int main()
