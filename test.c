@@ -2,7 +2,8 @@
 #include <stdlib.h>
 #include <png.h>
 
-int width = 100;
+
+int width = 800;
 int data_size;
 
 int main()
@@ -38,6 +39,8 @@ int main()
 	  row_pointers[data_size - 1][i+2] = 0;
 	}
     }
+  if (amt == 0)
+    data_size--;
   
   FILE *fw = fopen("out.png", "wb");
   
