@@ -1,2 +1,2 @@
-bin_PROGRAMS = test
-test_SOURCES = test.c
+bin_PROGRAMS = datpng
+datpng_SOURCES = encode.c datpng.h
