@@ -4,7 +4,7 @@
 AC_PREREQ(2.61)
 AC_INIT(test, 0.1, none)
 AM_INIT_AUTOMAKE([-Wall gnu])
-AC_CONFIG_SRCDIR([test.c])
+AC_CONFIG_SRCDIR([datpng.c])
 AC_CONFIG_HEADER([config.h])
 
 # Checks for programs.
