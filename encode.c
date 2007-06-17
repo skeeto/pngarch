@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <png.h>
+#include <byteswap.h>
 
 #include "datpng.h"
 
@@ -16,7 +17,7 @@ int datpng_write(char *filename, datpng_info *dat_info,
   png_bytep *row_pointers; /* Image data */
   int rp_height = data_size / rowbytes + 1; /* XXX special case needed */
   
-  if (dat_info->png_height > 0 && 
+  if (dat_info->png_height > 0 &&
       rp_height > dat_info->png_height)
     rp_height = dat_info->png_height;
   
@@ -33,20 +34,32 @@ int datpng_write(char *filename, datpng_info *dat_info,
   png_init_io(png_ptr, fw);
   
   /* Load data into row_pointers image data. */
+  int data_len, offset;
   int i;
-  int data_len;
-  for (i = 0; i < rp_height; i ++)
+  void *next_data = data;
+  for (i = 0; i < rp_height; i++)
     {
       row_pointers[i] = (png_bytep) calloc(1, rowbytes);
       
-      data_len = (i + 1) * rowbytes;
+      if (i == 0)
+	{
+	  int size = (int)data_size;
+	  memcpy(row_pointers[0], &size, 4);
+	  offset = 4;
+	}
+      else
+	offset = 0;
+      
+      /* 8-bit depth only: */ 
+
+      data_len = (i + 1) * rowbytes - 4;
       if (data_len > data_size)
 	data_len -= data_size;
       else
-	data_len = rowbytes;
+	data_len = rowbytes - offset;
       
-      /* 8-bit depth only: */ 
-      memcpy(row_pointers[i], data + i * rowbytes, data_len);
+      memcpy(row_pointers[i] + offset, next_data, data_len);
+      next_data += data_len;
     }
 
   /* Set image meta data. */

@@ -8,7 +8,6 @@
 /* Describes how data should be structured in the PNG. */
 typedef struct datpng_info
 {
-  char *filename;
   int bit_depth;
   int checksum;
   int x_pos;
@@ -21,5 +20,8 @@ typedef struct datpng_info
 
 int datpng_write(char *filename, datpng_info *dat_info, 
 		 void *data, size_t data_size);
+
+int datpng_read(char *filename, datpng_info *dat_info, 
+		void **data, size_t *data_size);
 
 #endif
