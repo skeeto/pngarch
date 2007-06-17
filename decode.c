@@ -5,7 +5,7 @@
 
 #include "datpng.h"
 
-int datpng_read(char *filename, datpng_info *dat_info, 
+int datpng_read(FILE *infile, datpng_info *dat_info, 
 		void **data, size_t *data_size)
 {
   png_structp png_ptr = png_create_read_struct
@@ -13,9 +13,7 @@ int datpng_read(char *filename, datpng_info *dat_info,
   
   png_infop info_ptr = png_create_info_struct(png_ptr);
   
-  FILE *fp = fopen(filename, "rb");
-  
-  png_init_io(png_ptr, fp);
+  png_init_io(png_ptr, infile);
   
   png_read_png(png_ptr, info_ptr, PNG_TRANSFORM_IDENTITY, NULL);
   
@@ -24,8 +22,6 @@ int datpng_read(char *filename, datpng_info *dat_info,
   
   /* Extra data size from the header. */
   *data_size = (size_t)((int)*((int *)row_pointers[0]));
-  
-  fprintf(stderr, "SIZE: %d\n", *data_size);
   
   *data = calloc(1, *data_size);
   
@@ -54,8 +50,6 @@ int datpng_read(char *filename, datpng_info *dat_info,
       amt += data_len;
       i++;
     }
-  
-  fclose(fp);
   
   return 0;
 }

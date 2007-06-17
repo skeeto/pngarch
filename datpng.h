@@ -18,10 +18,10 @@ typedef struct datpng_info
   int png_height;
 } datpng_info;
 
-int datpng_write(char *filename, datpng_info *dat_info, 
+int datpng_write(FILE *outfile, datpng_info *dat_info, 
 		 void *data, size_t data_size);
 
-int datpng_read(char *filename, datpng_info *dat_info, 
+int datpng_read(FILE *infile, datpng_info *dat_info, 
 		void **data, size_t *data_size);
 
 #endif

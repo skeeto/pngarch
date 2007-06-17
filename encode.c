@@ -7,7 +7,7 @@
 
 int data_size;
 
-int datpng_write(char *filename, datpng_info *dat_info, 
+int datpng_write(FILE *outfile, datpng_info *dat_info, 
 		 void *data, size_t data_size)
 {
   int byte_depth = 1;
@@ -24,14 +24,12 @@ int datpng_write(char *filename, datpng_info *dat_info,
   row_pointers = (png_bytep *)
     malloc(sizeof(png_bytep) * rp_height);
   
-  FILE *fw = fopen(filename, "wb");
-  
   /* Initialize png structs. */
   png_structp png_ptr = png_create_write_struct
     (PNG_LIBPNG_VER_STRING, NULL,
      NULL, NULL);
   png_infop info_ptr = png_create_info_struct(png_ptr);
-  png_init_io(png_ptr, fw);
+  png_init_io(png_ptr, outfile);
   
   /* Load data into row_pointers image data. */
   int data_len, offset;
@@ -83,8 +81,6 @@ int datpng_write(char *filename, datpng_info *dat_info,
   
   png_write_image(png_ptr, row_pointers);
   png_write_end(png_ptr, NULL);
-  
-  fclose(fw);
   
   return EXIT_SUCCESS;
 }
