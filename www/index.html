@@ -227,6 +227,18 @@ autoreconf -i
 Then you can go through the regular build process.
 </p>
 <!-- *************************************************************** -->
+<h2>Server Note</h2>
+<p>
+I have just found a bug in Apache 1.3.33 on Solaris (or at least a
+misconfiguration). I haven't tested to see if this bug exists in more
+recent versions yet. Apache tries to determine the file type when
+serving the file. When it sees a <code>.gz</code> extension, it thinks
+that the file is encoded in <code>gzip</code>. It does this even when
+the file's last extension is not <code>.gz</code>. For this reason,
+all gzipped and PNG archived file names are modified to have
+<code>_gz</code> instead. This will not effect the unzipped name,
+however, as the real file name is stored in the PNG file.
+</p>
 <h2>Copying</h2>
 <!--
 ;; Use this to insert the date below (in Emacs).
