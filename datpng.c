@@ -11,20 +11,20 @@ static int verbose_flag = 0;
 char *progname;
 
 int decode_dat(char *);
-int encode_dat(char *, char *);
+int encode_dat(char *);
+int auto_dat(char *filename);
 
 int print_usage(int exit_status)
 {
   printf("Usage: %s [options] [file]\n\n", progname);
   printf("Options:\n\n");
-  printf("  -c, --create     Create archive\n");
-  printf("  -x, --extract    Extract archive contents\n");
-  printf("  -f, --file       Use archive file"
-	 " (default \"-\" for stdin/srdout)\n");
+  printf("  -c, --create     Create data PNG\n");
+  printf("  -x, --extract    Extract data PNG\n");
   printf("  -w, --width      Width of the image (default %d)\n",
 	 img_width);
   printf("  -h, --height     Height of the image (default %d)\n", 
 	 img_height);
+  printf("  -t, --list       List internal filename\n");
   printf("  -V, --verbose    Enable verbose output\n");
   printf("  -v, --version    Display version information\n");
   printf("  -h, --help       Display this help text\n");
@@ -36,9 +36,9 @@ int main(int argc, char **argv)
 {
   progname = argv[0];
   
+  int auto_mode = 1; /* Auto detect mode. */
   int create_mode = 0; /* Create archive. */
   int extract_mode = 0; /* Extract archive. */
-  char *filename = "-"; /* Archive file. */
 
   int c; /* Current option. */
   
@@ -52,7 +52,6 @@ int main(int argc, char **argv)
 	  {"verbose", no_argument,       0, 'V'},
 	  {"extract", no_argument,       0, 'x'},
 	  {"create",  no_argument,       0, 'c'},
-	  {"file",    required_argument, 0, 'f'},
 	  {"width",   required_argument, 0, 'w'},
 	  {"height",  required_argument, 0, 'h'},
 	  {"list",    no_argument,       0, 't'},
@@ -62,7 +61,7 @@ int main(int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "hvVxcf:w:h:t",
+      c = getopt_long (argc, argv, "hvVxcw:h:t",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -84,7 +83,10 @@ int main(int argc, char **argv)
      
              case 'x':
 	       if (!create_mode)
-		 extract_mode = 1;
+		 {
+		   extract_mode = 1;
+		   auto_mode = 0;
+		 }
 	       else
 		 {	
 		   fprintf(stderr, 
@@ -96,7 +98,10 @@ int main(int argc, char **argv)
      
              case 'c':
 	       if (!extract_mode)
-		 create_mode = 1;
+		 {
+		   create_mode = 1;
+		   auto_mode = 0;
+		 }
 	       else
 		 {	
 		   fprintf(stderr, 
@@ -104,10 +109,6 @@ int main(int argc, char **argv)
 			  progname);
 		   print_usage(EXIT_FAILURE);
 		 }
-               break;
-     
-             case 'f':
-	       filename = optarg;
                break;
      
              case 'w':
@@ -130,27 +131,41 @@ int main(int argc, char **argv)
              }
          }
 
-  if (extract_mode == 0 && create_mode == 0)
-    {
-      fprintf(stderr, "%s: Must specify one of the -xc options\n", progname);
-      print_usage(EXIT_FAILURE);
-    }
-  
   /* Extract from the archive. */
   if (extract_mode == 1)
     {
-      decode_dat(filename);
-    }
+      int i;
+      for (i = optind; i < argc; i++)
+	decode_dat(argv[i]);
 
+      if (argc == optind)
+	decode_dat("-");
+    }
+  
   /* Create new archive. */
   if (create_mode == 1)
     {
       int i;
       for (i = optind; i < argc; i++)
-	encode_dat(filename, argv[i]);
+	encode_dat(argv[i]);
 
       if (argc == optind)
-	encode_dat(filename, "-");
+	encode_dat("-");
+    }
+
+  /* Automode - method based on filename extension. */
+  if (auto_mode)
+    {
+      if (argc == optind)
+	encode_dat("-");
+      else
+	{
+	  int i;
+	  for (i = optind; i < argc; i++)
+	    {
+	      auto_dat(argv[i]);      
+	    }
+	}
     }
   
   exit(EXIT_SUCCESS);
@@ -226,8 +241,13 @@ int decode_dat(char *filename)
   return 0;
 }
 
-int encode_dat(char *filename, char *infile)
+int encode_dat(char *infile)
 {
+  if (verbose_flag)
+    fprintf(stderr, "Encoding %s\n", infile);
+  
+  char *outfile; /* Output filename. */
+  
   /* Prepare input buffer */
   size_t read_size = 1024; /* Reading in 1 kbyte at a time. */
   size_t buffer_max = 1024 * 64; /* Initial buffer at 64 kbytes. */
@@ -237,6 +257,7 @@ int encode_dat(char *filename, char *infile)
   FILE *fin; /* input file pointer */
   if (strcmp(infile, "-") == 0)
     {
+      outfile = "-";
       buffer_size += 1;
       strncpy(buffer, "", buffer_max);
       fin = stdin;
@@ -247,12 +268,21 @@ int encode_dat(char *filename, char *infile)
       strncpy(buffer, infile, buffer_max);
 
       fin = fopen(infile, "rb");
-      if (infile == NULL)
+      if (fin == NULL)
 	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s", 
 		  progname, infile, strerror(errno));
 	  exit(EXIT_FAILURE);
 	}
+      
+      outfile = (char *)malloc(strlen(infile) + 5);
+      if (outfile == NULL)
+	{
+	  fprintf(stderr, "%s: Failed to malloc outfilename - %s", 
+		  progname, strerror(errno));
+	  exit(EXIT_FAILURE);
+	}
+      snprintf(outfile, strlen(infile) + 5, "%s.png", infile);
     }
 
   /* Read file into the buffer. */
@@ -287,11 +317,11 @@ int encode_dat(char *filename, char *infile)
   data_info.png_height = 0;
   
   FILE *fp;
-  if (strcmp(filename, "-") == 0)
+  if (strcmp(outfile, "-") == 0)
     fp = stdout;
   else
     {
-      fp = fopen(filename, "wb");
+      fp = fopen(outfile, "wb");
       if (fp == NULL)
     	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s", 
@@ -303,10 +333,19 @@ int encode_dat(char *filename, char *infile)
   /* Finally we get to write the data out to a PNG. */
   datpng_write(fp, &data_info, buffer, buffer_size);
 
-  if (strcmp(filename, "-") != 0)
+  if (strcmp(outfile, "-") != 0)
     fclose(fp);
   
   free(buffer);
   
   return 0;
+}
+
+int auto_dat(char *filename)
+{
+  if (strstr(filename, ".png") == filename + strlen(filename) - 4 ||
+      strstr(filename, ".PNG") == filename + strlen(filename) - 4)
+    return decode_dat(filename);
+  else
+    return encode_dat(filename);
 }
