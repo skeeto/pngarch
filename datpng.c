@@ -2,6 +2,8 @@
 #include <stdlib.h>
 #include "datpng.h"
 
+int img_width = 1024;
+
 int main()
 {
   encode_dat("out.png");
@@ -21,9 +23,9 @@ int decode_dat(char *filename)
   data_info.checksum = 0;
   data_info.x_pos = 0;
   data_info.y_pos = 0;
-  data_info.data_width = 100;
+  data_info.data_width = img_width;
   data_info.data_height = 0;
-  data_info.png_width = 100;
+  data_info.png_width = img_width;
   data_info.png_height = 0;
 
   size_t buffer_size = 0;
@@ -65,9 +67,9 @@ int encode_dat(char *filename)
   data_info.checksum = 0;
   data_info.x_pos = 0;
   data_info.y_pos = 0;
-  data_info.data_width = 100;
+  data_info.data_width = img_width;
   data_info.data_height = 0;
-  data_info.png_width = 100;
+  data_info.png_width = img_width;
   data_info.png_height = 0;
   
   FILE *fp = fopen(filename, "wb");
