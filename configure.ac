@@ -15,11 +15,15 @@ AC_CHECK_LIB([png], [png_sig_cmp])
 
 # Checks for header files.
 AC_HEADER_STDC
-AC_CHECK_HEADERS([stdlib.h])
+AC_CHECK_HEADERS([stdlib.h string.h])
 
 # Checks for typedefs, structures, and compiler characteristics.
+AC_TYPE_SIZE_T
 
 # Checks for library functions.
+AC_FUNC_MALLOC
+AC_FUNC_REALLOC
+AC_CHECK_FUNCS([strdup strerror strstr])
 
 AC_CONFIG_FILES([Makefile])
 AC_OUTPUT
