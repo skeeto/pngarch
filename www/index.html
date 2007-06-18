@@ -7,6 +7,7 @@
 <title>PNG Archiver</title>
 </head>
 <body>
+<!-- *************************************************************** -->
 <h1>PNG Archiver</h1>
 <p>
 <strong>PNG Archiver</strong> is a library (pngdat) and command line
@@ -28,6 +29,16 @@ anywhere where you can share a file, you can always share an
 image. With the PNG Archiver, you can store any data you want in the
 image.
 </p>
+<p>
+The tool and library are both licensed under the <a
+href="http://www.gnu.org"> GNU</a> <a
+href="http://www.gnu.org/copyleft/gpl.html"> GPL</a>.
+</p>
+<p>
+Comments, questions, bug reports (there are many bugs right now)? Email 
+<a href="mailto:&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;">&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;</a>
+</p>
+<!-- *************************************************************** -->
 <h2>Summary</h2>
 <p>
 Currently, the tool can only handle 24-bit (8-bit depth) RGB,
@@ -61,8 +72,33 @@ stored in the image meta data. This means that you could take a
 screenshot (assuming that your display is at a minimum bit depth for
 that image) and extract the data directly from the screenshot.
 </p>
+<!-- *************************************************************** -->
+<h2>Usage</h2>
+<p>
+Currently, the tool can archive any file inside of a PNG file and
+extract that file from the PNG into an identical file. Here are the
+current command line switches,
+</p>
+<pre>
+Usage: pngarch [options] [file]
+
+Options:
+
+  -c, --create     Create data PNG
+  -x, --extract    Extract data PNG
+  -w, --width      Width of the image (default 250)
+  -h, --height     Height of the image (default 0)
+  -t, --list       List internal filename
+  -V, --verbose    Enable verbose output
+  -v, --version    Display version information
+  -h, --help       Display this help text
+</pre>
+<p>
+More options will be available as I continue working on the tool.
+</p>
+<!-- *************************************************************** -->
 <h2>Download</h2>
-<h3>Alpha Release 0.1</h3>
+<h3>Alpha Release 0.1 (2007-06-18)</h3>
 <p>
 This is the first alpha release of the program. It lacks a lot of the
 functionality that will be in release 1.0. <strong>The format of the
@@ -70,7 +106,10 @@ data in the PNG is subject to change. Images created with this release
 may not be readable in future releases.</strong>
 </p>
 <p>
-<a href="download/datpng-0.1.tar.gz">datpng-0.1.tar.gz</a>
+Source tarball: 
+<a href="download/datpng-0.1.tar.gz">datpng-0.1.tar.gz</a><br/>
+Source PNG Archive:
+<img src="download/datpng-0.1.tar.gz.png"><br/>
 </p>
 <p>
 The source uses the GNU build system. To build the source you will
@@ -104,6 +143,17 @@ autoreconf -i
 </pre>
 <p>
 Then you can go through the regular build process.
+</p>
+<!-- *************************************************************** -->
+<p>
+<!--
+;; Use this to insert the date below (in Emacs).
+(defun insert-date-string ()
+  "Insert a nicely formated date string."
+  (interactive)
+  (insert (format-time-string "%Y-%m-%d")))
+-->
+This document last updated on 2007-06-18.
 </p>
 </body>
 </html>
