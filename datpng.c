@@ -4,11 +4,33 @@
 #include "datpng.h"
 
 static int img_width = 1024;
-static int verbose_flag;
+static int verbose_flag = 0;
+char *progname;
+
+int print_usage(int exit_status)
+{
+  printf("Usage: %s [options] [files]\n\n", progname);
+  printf("Options:\n\n");
+  printf("  -c, --create     Create archive\n");
+  printf("  -x, --extract    Extract archive contents\n");
+  printf("  -f, --file       Use archive file"
+	 " (default \"-\" for stdin/srdout)\n");
+  printf("  -V, --verbose    Enable verbose output\n");
+  printf("  -v, --version    Display version information\n");
+  printf("  -h, --help       Display this help text\n");
+
+  exit(exit_status);
+}
 
 int main(int argc, char **argv)
 {
-  int c;
+  progname = argv[0];
+  
+  int create_mode = 0; /* Create archive. */
+  int extract_mode = 0; /* Extract archive. */
+  char *filename = "-"; /* Archive file. */
+
+  int c; /* Current option. */
   
   while (1)
     {
@@ -16,18 +38,18 @@ int main(int argc, char **argv)
 	{
 	  /* These options set a flag. */
 	  {"help",    no_argument,       0, 'h'},
-	  {"verbose", no_argument,       0, 'v'},
+	  {"version", no_argument,       0, 'v'},
+	  {"verbose", no_argument,       0, 'V'},
 	  {"extract", no_argument,       0, 'x'},
 	  {"create",  no_argument,       0, 'c'},
-	  {"raw",     no_argument,       0, 'r'},
-	  {"simple",  no_argument,       0, 's'},
 	  {"file",    required_argument, 0, 'f'},
+	  {"list",    no_argument,       0, 't'},
 	  {0, 0, 0, 0}
 	};
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "hvxcrsf:",
+      c = getopt_long (argc, argv, "hvVxcf:t",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -37,36 +59,73 @@ int main(int argc, char **argv)
       switch (c)
 	{
              case 'h':
+	       print_usage(EXIT_SUCCESS);
                break;
-     
+
              case 'v':
                break;
      
+             case 'V':
+	       verbose_flag = 1;
+               break;
+     
              case 'x':
+	       if (!create_mode)
+		 extract_mode = 1;
+	       else
+		 {	
+		   fprintf(stderr, 
+			  "%s: cannot specify more than one -xc option\n", 
+			  progname);
+		   print_usage(EXIT_FAILURE);
+		 }
                break;
      
              case 'c':
-               break;
-     
-             case 'r':
-               break;
-     
-             case 's':
+	       if (!extract_mode)
+		 create_mode = 1;
+	       else
+		 {	
+		   fprintf(stderr, 
+			   "%s: cannot specify more than one -xc option\n", 
+			  progname);
+		   print_usage(EXIT_FAILURE);
+		 }
                break;
      
              case 'f':
+	       filename = optarg;
+               break;
+     
+             case 't':
                break;
      
              case '?':
-               /* getopt_long already printed an error message. */
+               print_usage(EXIT_FAILURE);
                break;
      
              default:
                abort ();
              }
          }
+
+  if (extract_mode == 0 && create_mode == 0)
+    {
+      fprintf(stderr, "%s: Must specify one of the -xc options\n", progname);
+      print_usage(EXIT_FAILURE);
+    }
   
-  fprintf(stderr, "Done.\n");
+  /* Extract from the archive. */
+  if (extract_mode == 1)
+    {
+      decode_dat(filename);
+    }
+
+  /* Create new archive. */
+  if (create_mode == 1)
+    {
+      encode_dat(filename);
+    }
   
   exit(EXIT_SUCCESS);
 }
