@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="ISO-8859-1"?>
+<!DOCTYPE html
+          PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+          "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html>
+<head>
+<title>PNG Archiver</title>
+</head>
+<body>
+<h1>PNG Archiver</h1>
+<p>
+<strong>PNG Archiver</strong> is a library (pngdat) and command line
+tool (pngarch) for storing data inside a <a
+href="http://www.libpng.org/">PNG</a> image. The inspiration for this
+idea comes from Sean Howard's Gameplay Mechanics. This idea is from <a
+href="http://www.squidi.net/three/entry.php?id=12">Mechanic #12</a>:
+</p>
+<blockquote cite="http://www.squidi.net/three/entry.php?id=12">
+<p>
+The idea is that data can be embedded into image files (similar to a
+bar-code, but not having to pander to a single horizontal line
+scanner) in order to make sharing of data easier.
+</p>
+</blockquote>
+<p>
+Images are the easiest file format to share on the Internet, and
+anywhere where you can share a file, you can always share an
+image. With the PNG Archiver, you can store any data you want in the
+image.
+</p>
+<h2>Summary</h2>
+<p>
+Currently, the tool can only handle 24-bit (8-bit depth) RGB,
+non-alpha PNGs. As I develop the tool, it will gain the ability to
+embed data in any type of PNG (using larger areas of the image for
+images with lower bit depth). The tool and library will also have
+built in error checking to make sure that the image has not been
+damaged. An image may be damaged if it was converted to a lossy image
+format (such as JPEG).
+</p>
+<p>
+Eventually (before 1.0) the tool and library will also be able to pull
+image data from anywhere in the image. This means that you can embed
+the data in a nice frame that is relevant to the data.
+</p>
+<h3>Why PNG?</h3>
+<p>
+PNG was selected because it is a non-lossy, standard image format
+common on the Web. It uses the <a href="http://www.libpng.org"> libpng
+</a> library to access the images.
+</p>
+<p>
+JPEG could not be used because it is a lossy image format. GIF isn't
+lossy, but it sucks (having only a limited 256 color palette). Why
+would you want to use GIF for anything? (GIF animations are annoying,
+so this does not count)
+<p>
+<p>
+All data is stored in the visible pixels of the image; no data is
+stored in the image meta data. This means that you could take a
+screenshot (assuming that your display is at a minimum bit depth for
+that image) and extract the data directly from the screenshot.
+</p>
+<h2>Download</h2>
+<h3>Alpha Release 0.1</h3>
+<p>
+This is the first alpha release of the program. It lacks a lot of the
+functionality that will be in release 1.0. <strong>The format of the
+data in the PNG is subject to change. Images created with this release
+may not be readable in future releases.</strong>
+<a href=""></a>
+</p>
+
+</body>
+</html>
