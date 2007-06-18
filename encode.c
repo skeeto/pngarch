@@ -5,7 +5,7 @@
 
 #include "datpng.h"
 
-int data_size;
+int header_size = 4;
 
 int datpng_write(FILE *outfile, datpng_info *dat_info, 
 		 void *data, size_t data_size)
@@ -13,9 +13,10 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   int byte_depth = 1;
   int rowbytes = dat_info->data_width * 3 * byte_depth;
   
-  /* Prepare the image data */
   png_bytep *row_pointers; /* Image data */
-  int rp_height = data_size / rowbytes + 1; /* XXX special case needed */
+  
+  /* XXX special case needed */
+  int rp_height = (data_size + header_size) / rowbytes + 1;
   
   if (dat_info->png_height > 0 &&
       rp_height > dat_info->png_height)
@@ -43,16 +44,16 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 	{
 	  int size = (int)data_size;
 	  memcpy(row_pointers[0], &size, 4);
-	  offset = 4;
+	  offset = header_size;
 	}
       else
 	offset = 0;
       
       /* 8-bit depth only: */ 
 
-      data_len = (i + 1) * rowbytes - 4;
+      data_len = (i + 1) * rowbytes - header_size;
       if (data_len > data_size)
-	data_len -= data_size;
+	data_len = data_size - (data_len - rowbytes);
       else
 	data_len = rowbytes - offset;
       
