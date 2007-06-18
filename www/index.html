@@ -10,8 +10,8 @@
 <!-- *************************************************************** -->
 <h1>PNG Archiver</h1>
 <p>
-<strong>PNG Archiver</strong> is a library (pngdat) and command line
-tool (pngarch) for storing data inside a <a
+<strong>PNG Archiver</strong> is a library (<code>pngdat</code>) and
+command line tool (<code>pngarch</code>) for storing data inside a <a
 href="http://www.libpng.org/">PNG</a> image. The inspiration for this
 idea comes from Sean Howard's Gameplay Mechanics. This idea is from <a
 href="http://www.squidi.net/three/entry.php?id=12">Mechanic #12</a>:
@@ -30,29 +30,76 @@ image. With the PNG Archiver, you can store any data you want in the
 image.
 </p>
 <p>
+For example, here is Richard Stallman's <a
+href="http://www.gnu.org/philosophy/right-to-read.html"> Right to
+Read</a>:<br/>
+<img src="right-to-read.txt.png"><br/>
+and gzipped (more colorful than plain ASCII):<br/>
+<img src="right-to-read.txt.gz.png"><br/>
+The original text file can be found here: 
+<a href="right-to-read.txt">right-to-read.txt</a> (13KB).
+</p>
+<p>
+The built-in PNG compression doesn't do much for this non-image
+data. This is why you should compress data before archiving it in a
+PNG.
+</p>
+<p>
+A decent amount of data can be stored in an image. 1.4MB can be stored
+in an 800x600 8-bit depth image. If you want to push the limits, you
+can store about 4.5MB in a 1024x768 16-bit depth image (a typical
+desktop wallpaper). That is enough to store several minutes of audio
+recording.
+</p>
+<p>
+This tool has the word "archive" in its name. However, this
+technically is not an archiving tool. Only a single file can be
+embedded using this tool. This means you need an external archiving
+tool, such as <code>tar</code> or <code>zip</code>, if you want to
+store multiple files. The purpose of this limitation was so that the
+PNG Archiver does not duplicate the functionality of other tools that
+already do an excellent job of archiving.
+</p>
+<p>
+The word/acronym "PNG" is pronounced "ping". This means that this tool
+is called the "ping archiver". Really, you can call it whatever you
+want. This is just some advice to help you avoid confusion later on.
+</p>
+<p>
 The tool and library are both licensed under the <a
 href="http://www.gnu.org"> GNU</a> <a
 href="http://www.gnu.org/copyleft/gpl.html"> GPL</a>.
 </p>
 <p>
-Comments, questions, bug reports (there are many bugs right now)? Email 
+Comments, questions, bug reports (there are many bugs right now)?
+Email Chris Wellons at
 <a href="mailto:&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;">&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;</a>
 </p>
 <!-- *************************************************************** -->
 <h2>Summary</h2>
+<h3>Current Limitations</h3>
 <p>
 Currently, the tool can only handle 24-bit (8-bit depth) RGB,
-non-alpha PNGs. As I develop the tool, it will gain the ability to
+non-alpha PNG's. As I develop the tool, it will gain the ability to
 embed data in any type of PNG (using larger areas of the image for
 images with lower bit depth). The tool and library will also have
 built in error checking to make sure that the image has not been
 damaged. An image may be damaged if it was converted to a lossy image
-format (such as JPEG).
+format (such as JPEG). The PNG archives are also currently limited to
+the architecture of the machine. For example, you cannot create a PNG
+archive on a PowerPC and extract it on a Pentium. This will be fixed
+soon.
 </p>
 <p>
 Eventually (before 1.0) the tool and library will also be able to pull
 image data from anywhere in the image. This means that you can embed
-the data in a nice frame that is relevant to the data.
+the data in a nice frame that is relevant to the data (see Sean's
+Gameplay Mechanics page).
+</p>
+<p>
+Also, the library is currently not separated as a library from the
+<code>pngarch</code> tool. As the library is developed, this will be
+done.
 </p>
 <h3>Why PNG?</h3>
 <p>
@@ -76,11 +123,12 @@ that image) and extract the data directly from the screenshot.
 <h2>Usage</h2>
 <p>
 Currently, the tool can archive any file inside of a PNG file and
-extract that file from the PNG into an identical file. Here are the
+extract that file from the PNG into an identical file. More options
+will be available as I continue working on the tool. Here are the
 current command line switches,
 </p>
 <pre>
-Usage: pngarch [options] [file]
+Usage: pngarch [options] [files]
 
 Options:
 
@@ -94,10 +142,41 @@ Options:
   -h, --help       Display this help text
 </pre>
 <p>
-More options will be available as I continue working on the tool.
+The filename of the file archived in the PNG is stored within the PNG
+itself. When extracting, the extracted data is put in a file with this
+name. For example,
+</p>
+<pre>
+$ pngarch my_file.txt
+</pre>
+<p>
+will create a PNG file <code>my_file.txt.png</code>. Even if this file
+is renamed, the PNG will know what file to extract to (-V for verbose),
+</p>
+<pre>
+$ mv my_file.txt.png a_file.txt.png
+$ pngarch a_file.txt.png
+Extracted my_file.txt
+$ 
+</pre>
+<p>
+The interface is very similar to <a href="http://www.gzip.org/">
+<code>gzip</code></a>. When you don't tell it exactly what to do, it
+will figure it out based on the file extension.
 </p>
 <!-- *************************************************************** -->
 <h2>Download</h2>
+<p>
+All downloads, including <a href="http://en.wikipedia.org/wiki/MD5">
+md5</a> checksums can be found in <a href="files/">files/</a>.
+</p>
+<p>
+There will not be any official binaries until at least release
+1.0. Even at that point, there may not be any. However, due to the
+complexity of building on w32, I may provide those binaries at that
+time (if I can figure out how to build it for w32, or someone else
+does it for me).
+</p>
 <h3>Alpha Release 0.1 (2007-06-18)</h3>
 <p>
 This is the first alpha release of the program. It lacks a lot of the
@@ -107,9 +186,9 @@ may not be readable in future releases.</strong>
 </p>
 <p>
 Source tarball: 
-<a href="download/datpng-0.1.tar.gz">datpng-0.1.tar.gz</a><br/>
-Source PNG Archive:
-<img src="download/datpng-0.1.tar.gz.png"><br/>
+<a href="files/pngarch-0.1.tar.gz">datpng-0.1.tar.gz</a><br/>
+Source PNG Archive (for fun):<br/>
+<img src="files/pngarch-0.1.tar.gz.png"><br/>
 </p>
 <p>
 The source uses the GNU build system. To build the source you will
@@ -123,11 +202,14 @@ library. You can compile with the regular commands:
 make
 </pre>
 <p>
-You can install the tools, but there is no need to yet.
+You can install (with <code>make install</code>), but there is no need
+to yet because you should only be using the tools for testing right
+now.
 </p>
 <h3>Subversion Repository</h3>
 <p>
-You can also grab the latest source right from the repository:
+You can also grab the latest source right from the <a
+href="http://subversion.tigris.org/">Subversion</a> repository:
 </p>
 <pre>
 svn co https://opensvn.csie.org/datpng/trunk datpng
@@ -145,7 +227,7 @@ autoreconf -i
 Then you can go through the regular build process.
 </p>
 <!-- *************************************************************** -->
-<p>
+<h2>Copying</h2>
 <!--
 ;; Use this to insert the date below (in Emacs).
 (defun insert-date-string ()
@@ -153,7 +235,12 @@ Then you can go through the regular build process.
   (interactive)
   (insert (format-time-string "%Y-%m-%d")))
 -->
+<p>
 This document last updated on 2007-06-18.
+</p>
+<p>
+Verbatim copying and distribution of this entire document is permitted
+in any medium without royalty provided this notice is preserved.
 </p>
 </body>
 </html>
