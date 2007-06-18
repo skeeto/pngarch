@@ -341,6 +341,7 @@ int encode_dat(char *infile)
   return 0;
 }
 
+/* Autodetect what to do by filename extension. */
 int auto_dat(char *filename)
 {
   if (strstr(filename, ".png") == filename + strlen(filename) - 4 ||
