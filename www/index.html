@@ -68,8 +68,42 @@ This is the first alpha release of the program. It lacks a lot of the
 functionality that will be in release 1.0. <strong>The format of the
 data in the PNG is subject to change. Images created with this release
 may not be readable in future releases.</strong>
-<a href=""></a>
 </p>
-
+<p>
+<a href="download/datpng-0.1.tar.gz">datpng-0.1.tar.gz</a>
+</p>
+<p>
+The source uses the GNU build system. To build the source you will
+need a C compiler (<a href="http://gcc.gnu.org/"> gcc </a>
+recommended), a bourne shell (such as <a
+href="http://www.gnu.org/software/bash/"> bash </a>), and the libpng
+library. You can compile with the regular commands:
+</p>
+<pre>
+./configure
+make
+</pre>
+<p>
+You can install the tools, but there is no need to yet.
+</p>
+<h3>Subversion Repository</h3>
+<p>
+You can also grab the latest source right from the repository:
+</p>
+<pre>
+svn co https://opensvn.csie.org/datpng/trunk datpng
+</pre>
+<p>
+To build from the repository, you will need <a
+href="http://www.gnu.org/software/autoconf/"> autoconf </a> and <a
+href="http://www.gnu.org/software/automake/"> automake </a>. To get
+the build environment up to date, run the command,
+</p>
+<pre>
+autoreconf -i
+</pre>
+<p>
+Then you can go through the regular build process.
+</p>
 </body>
 </html>
