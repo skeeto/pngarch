@@ -1,14 +1,70 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <getopt.h>
 #include "datpng.h"
 
-int img_width = 1024;
+static int img_width = 1024;
+static int verbose_flag;
 
-int main()
+int main(int argc, char **argv)
 {
-  encode_dat("out.png");
+  int c;
   
-  decode_dat("out.png");
+  while (1)
+    {
+      static struct option long_options[] =
+	{
+	  /* These options set a flag. */
+	  {"help",    no_argument,       0, 'h'},
+	  {"verbose", no_argument,       0, 'v'},
+	  {"extract", no_argument,       0, 'x'},
+	  {"create",  no_argument,       0, 'c'},
+	  {"raw",     no_argument,       0, 'r'},
+	  {"simple",  no_argument,       0, 's'},
+	  {"file",    required_argument, 0, 'f'},
+	  {0, 0, 0, 0}
+	};
+      /* getopt_long stores the option index here. */
+      int option_index = 0;
+      
+      c = getopt_long (argc, argv, "hvxcrsf:",
+		       long_options, &option_index);
+      
+      /* Detect the end of the options. */
+      if (c == -1)
+	break;
+      
+      switch (c)
+	{
+             case 'h':
+               break;
+     
+             case 'v':
+               break;
+     
+             case 'x':
+               break;
+     
+             case 'c':
+               break;
+     
+             case 'r':
+               break;
+     
+             case 's':
+               break;
+     
+             case 'f':
+               break;
+     
+             case '?':
+               /* getopt_long already printed an error message. */
+               break;
+     
+             default:
+               abort ();
+             }
+         }
   
   fprintf(stderr, "Done.\n");
   
