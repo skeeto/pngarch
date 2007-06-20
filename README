@@ -1,0 +1,35 @@
+The datpng header looks like this:
+
+| ver |  length   |   width   | data ...
+|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|--|
+0  1  2  3  4  5  6  7  8  9  10 11 12 13 14 15 
+
+struct datpng_header
+{
+  word  ver;
+  dword length;
+  dword width;
+  byte  c;
+  byte  d;
+}
+
+All header data is stored in big endian (network) order.
+
+  ver
+  ---
+The 'ver' bytes are the version of the data PNG file. This version
+indicates the encoded bit depth, existance of a checksum, and other
+features.
+
+The least significant 4 bits define the bit depth (up to 16). The most
+significant bit (the sign bit) indicates a checksum. All other bits
+describe a version of the datpng. This will allow future versions of
+the program to continue processing older datpng files.
+
+  length
+  ------
+The 'length' bytes give the length of the data in bytes.
+
+  width
+  -----
+The 'width' bytes give the width of the data chunk in pixels.
