@@ -5,6 +5,13 @@
 #include <string.h>
 #include "datpng.h"
 
+#ifdef HAVE_CONFIG_H
+#include "config.h"
+char *version = PACKAGE_VERSION;
+#else
+char *version = "";
+#endif
+
 static int data_width = 250;
 static int data_height = 0;
 static int img_width = 0;
@@ -21,15 +28,26 @@ int decode_dat(char *);
 int encode_dat(char *);
 int auto_dat(char *filename);
 
+void print_version()
+{
+  printf("PNG Archiver, version %s\n", version);
+  printf("Copyright (C) 2007 Chris Wellons\n");
+  printf("This is free software; see the source code for "
+	 "copying conditions.\n");
+  printf("There is ABSOLUTELY NO WARRANTY; not even for MERCHANTIBILITY or\n");
+  printf("FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+}
 int print_usage(int exit_status)
 {
+  print_version();
+
   printf("Usage: %s [options] [file]\n\n", progname);
   printf("Options:\n\n");
   printf("  -c, --create       Create PNG Archive\n");
   printf("  -x, --extract      Extract PNG Archive\n");
   printf("  -v, --verbose      Enable verbose output\n");
   printf("  -V, --version      Display version information\n");
-  printf("  -?, --help         Display this help text\n");
+  printf("  -!, --help         Display this help text\n");
 
   /* Archive options. */
   printf("\nArchiving Options:\n\n");
@@ -93,7 +111,7 @@ int main(int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "vVxcw:h:tn?X:Y:H:W:",
+      c = getopt_long (argc, argv, "vVxcw:h:tn!X:Y:H:W:",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -102,11 +120,12 @@ int main(int argc, char **argv)
       
       switch (c)
 	{
-             case 'H':
+             case '!':
 	       print_usage(EXIT_SUCCESS);
                break;
 
              case 'V':
+	       print_version();
                break;
      
              case 'v':
@@ -144,10 +163,18 @@ int main(int argc, char **argv)
                break;
      
              case 'w':
-	       img_width = atoi(optarg);
+	       data_width = atoi(optarg);
                break;
      
              case 'h':
+	       data_height = atoi(optarg);
+               break;
+     
+             case 'W':
+	       img_width = atoi(optarg);
+               break;
+     
+             case 'H':
 	       img_height = atoi(optarg);
                break;
      
