@@ -5,8 +5,14 @@
 #include <string.h>
 #include "datpng.h"
 
-static int img_width = 250;
+static int data_width = 250;
+static int data_height = 0;
+static int img_width = 0;
 static int img_height = 0;
+static int x_pos = 0;
+static int y_pos = 0;
+static int auto_detect = 1;
+
 static int verbose_flag = 0;
 static int checksum = 1;
 char *progname;
@@ -19,18 +25,35 @@ int print_usage(int exit_status)
 {
   printf("Usage: %s [options] [file]\n\n", progname);
   printf("Options:\n\n");
-  printf("  -c, --create       Create data PNG\n");
-  printf("  -x, --extract      Extract data PNG\n");
-  printf("  -w, --width        Width of the image (default %d)\n",
-	 img_width);
-  printf("  -h, --height       Height of the image (default %d)\n", 
-	 img_height);
-  printf("  -n, --no-checksum  Do not add checksum to data\n");
-  printf("  -t, --list         List internal filename\n");
-  printf("  -V, --verbose      Enable verbose output\n");
-  printf("  -v, --version      Display version information\n");
-  printf("  -H, --help         Display this help text\n");
+  printf("  -c, --create       Create PNG Archive\n");
+  printf("  -x, --extract      Extract PNG Archive\n");
+  printf("  -v, --verbose      Enable verbose output\n");
+  printf("  -V, --version      Display version information\n");
+  printf("  -?, --help         Display this help text\n");
 
+  /* Archive options. */
+  printf("\nArchiving Options:\n\n");
+  printf("  -n, --no-checksum  Do not add checksum to data\n");
+  printf("  -w, --data-width   Width of data in the image (default %d)\n",
+	 data_width);
+  printf("  -h, --data-height  Height of data in the image (default %d)\n", 
+	 data_height);
+  printf("  -X, --x-position   Data distance from the left of the image"
+	 " (default %d)\n", x_pos);
+  printf("  -Y, --y-position   Data distance from the top of the image"
+	 " (default %d)\n", y_pos);
+  printf("  -w, --img-width    Width of the image (default %d)\n",
+	 img_width);
+  printf("  -h, --img-height   Height of the image (default %d)\n", 
+	 img_height);
+
+  /* Extraction options. */
+  printf("\nExtraction Options:\n\n");
+  printf("  -t, --list         List internal filename\n");
+  printf("  --auto-detect      Attempt to find image data "
+	 "automatically. (default)\n");
+  printf("  --no-auto-detect   Do not attempt to find image data "
+	 "automatically.\n");
   exit(exit_status);
 }
 
@@ -49,22 +72,28 @@ int main(int argc, char **argv)
       static struct option long_options[] =
 	{
 	  /* These options set a flag. */
-	  {"help",        no_argument,       0, 'H'},
-	  {"version",     no_argument,       0, 'v'},
-	  {"verbose",     no_argument,       0, 'V'},
+	  {"help",        no_argument,       0, '?'},
+	  {"version",     no_argument,       0, 'V'},
+	  {"verbose",     no_argument,       0, 'v'},
 	  {"extract",     no_argument,       0, 'x'},
 	  {"create",      no_argument,       0, 'c'},
-	  {"width",       required_argument, 0, 'w'},
-	  {"height",      required_argument, 0, 'h'},
+	  {"data-width",  required_argument, 0, 'w'},
+	  {"data-height", required_argument, 0, 'h'},
 	  {"list",        no_argument,       0, 't'},
 	  {"no-checksum", no_argument,       0, 'n'},
+	  {"x-position",  required_argument, 0, 'X'},
+	  {"y-position",  required_argument, 0, 'Y'},
+
+	  /* Auto-detect options. */
+	  {"--no-auto-detect", no_argument, &auto_detect, 0},
+	  {"--auto-detect",    no_argument, &auto_detect, 1},
 	  {0, 0, 0, 0}
 	};
       
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "hvVxcw:h:tn",
+      c = getopt_long (argc, argv, "vVxcw:h:tn?X:Y:H:W:",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -77,10 +106,10 @@ int main(int argc, char **argv)
 	       print_usage(EXIT_SUCCESS);
                break;
 
-             case 'v':
+             case 'V':
                break;
      
-             case 'V':
+             case 'v':
 	       verbose_flag = 1;
                break;
      
