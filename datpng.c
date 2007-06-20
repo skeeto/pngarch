@@ -8,6 +8,7 @@
 static int img_width = 250;
 static int img_height = 0;
 static int verbose_flag = 0;
+static int checksum = 1;
 char *progname;
 
 int decode_dat(char *);
@@ -18,16 +19,17 @@ int print_usage(int exit_status)
 {
   printf("Usage: %s [options] [file]\n\n", progname);
   printf("Options:\n\n");
-  printf("  -c, --create     Create data PNG\n");
-  printf("  -x, --extract    Extract data PNG\n");
-  printf("  -w, --width      Width of the image (default %d)\n",
+  printf("  -c, --create       Create data PNG\n");
+  printf("  -x, --extract      Extract data PNG\n");
+  printf("  -w, --width        Width of the image (default %d)\n",
 	 img_width);
-  printf("  -h, --height     Height of the image (default %d)\n", 
+  printf("  -h, --height       Height of the image (default %d)\n", 
 	 img_height);
-  printf("  -t, --list       List internal filename\n");
-  printf("  -V, --verbose    Enable verbose output\n");
-  printf("  -v, --version    Display version information\n");
-  printf("  -h, --help       Display this help text\n");
+  printf("  -n, --no-checksum  Do not add checksum to data\n");
+  printf("  -t, --list         List internal filename\n");
+  printf("  -V, --verbose      Enable verbose output\n");
+  printf("  -v, --version      Display version information\n");
+  printf("  -H, --help         Display this help text\n");
 
   exit(exit_status);
 }
@@ -39,7 +41,7 @@ int main(int argc, char **argv)
   int auto_mode = 1; /* Auto detect mode. */
   int create_mode = 0; /* Create archive. */
   int extract_mode = 0; /* Extract archive. */
-
+  
   int c; /* Current option. */
   
   while (1)
@@ -47,21 +49,22 @@ int main(int argc, char **argv)
       static struct option long_options[] =
 	{
 	  /* These options set a flag. */
-	  {"help",    no_argument,       0, 'H'},
-	  {"version", no_argument,       0, 'v'},
-	  {"verbose", no_argument,       0, 'V'},
-	  {"extract", no_argument,       0, 'x'},
-	  {"create",  no_argument,       0, 'c'},
-	  {"width",   required_argument, 0, 'w'},
-	  {"height",  required_argument, 0, 'h'},
-	  {"list",    no_argument,       0, 't'},
+	  {"help",        no_argument,       0, 'H'},
+	  {"version",     no_argument,       0, 'v'},
+	  {"verbose",     no_argument,       0, 'V'},
+	  {"extract",     no_argument,       0, 'x'},
+	  {"create",      no_argument,       0, 'c'},
+	  {"width",       required_argument, 0, 'w'},
+	  {"height",      required_argument, 0, 'h'},
+	  {"list",        no_argument,       0, 't'},
+	  {"no-checksum", no_argument,       0, 'n'},
 	  {0, 0, 0, 0}
 	};
       
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "hvVxcw:h:t",
+      c = getopt_long (argc, argv, "hvVxcw:h:tn",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -120,6 +123,10 @@ int main(int argc, char **argv)
                break;
      
              case 't':
+               break;
+     
+             case 'n':
+	       checksum = 0;
                break;
      
              case '?':
@@ -308,7 +315,7 @@ int encode_dat(char *infile)
   /* Setup meta data. */
   datpng_info data_info; 
   data_info.bit_depth = 8;
-  data_info.checksum = 0;
+  data_info.checksum = checksum;
   data_info.x_pos = 0;
   data_info.y_pos = 0;
   data_info.data_width = img_width;
