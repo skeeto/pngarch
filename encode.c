@@ -2,6 +2,7 @@
 #include <stdlib.h>
 #include <png.h>
 #include <stdint.h>
+#include <math.h>
 #include <netinet/in.h>
 
 #include "config.h"
@@ -15,26 +16,59 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 		 void *data, size_t data_size)
 {
   int byte_depth = 1;
-  int rowbytes = dat_info->data_width * 3 * byte_depth; 
-  int csum = dat_info->checksum;
+  int csum = dat_info->checksum;  
+
+  int x_pos = dat_info->x_pos;
+  int y_pos = dat_info->y_pos;
+  int img_width = dat_info->png_width;
+  int img_height = dat_info->png_height;
+  int data_width = dat_info->data_width;
+  int data_height = dat_info->data_height;  
   
-  int width = dat_info->png_width;
+  /* No constraints defined. */
+  if (img_width == 0 && img_height == 0 &&
+      data_width == 0 && data_height == 0)
+    return PNGDAT_MISSING_CONSTRAINT;
+
+  /* Propagate width value. */
+  if (img_width == 0 && data_width > 0)
+    img_width = data_width - x_pos;
+  if (img_width > 0 && data_width == 0)
+    data_width = img_width + x_pos;
+
+  /* Propagate height value. */
+  if (img_height == 0 && data_height > 0)
+    img_height = data_height - y_pos;
+  if (img_height > 0 && data_height == 0)
+    data_height = img_height + y_pos;
   
-  /* XXX special case needed */
-  int rp_height = (data_size + header_size) / rowbytes + 1;
-  if (csum)
-    rp_height += (rp_height / rowbytes) + 1;
+  if (img_width == 0 && data_width == 0)
+    {
+      /* Calculate a width. */
+      data_width = (int)ceil((data_size + header_size) / data_height); 
+      if (csum)
+	data_width = (int)ceil((data_size + header_size + data_height)
+			       / data_height);
+      img_width = data_width + x_pos;
+    }
+  if (img_height == 0 && data_height == 0)
+    {
+      /* Calculate a height. */
+      data_height = 1 + (int)ceil((data_size + header_size) 
+			      / (data_width * 3)); 
+      if (csum)
+	data_height = 1 + (int)ceil((data_size + header_size + data_height)
+				/ (data_width * 3));
+      img_height = data_height + y_pos;
+    }
   
-  /* If png height is defined, data will take that height no matter
-     what. Extra data is truncated. */
-  if (dat_info->png_height > 0 &&
-      rp_height > dat_info->png_height)
-    rp_height = dat_info->png_height;
-  
+  int rowbytes = img_width * 3 * byte_depth;
+  int datbytes = data_width * 3 * byte_depth - csum;
+
   /* Image data */
   png_bytep *row_pointers; 
   row_pointers = (png_bytep *)
-    malloc(sizeof(png_bytep) * rp_height);
+    malloc(sizeof(png_bytep) * img_height);
   
   /* Initialize png structs. */
   png_structp png_ptr = png_create_write_struct
@@ -56,22 +90,21 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   memcpy(header + 2, &size, 4);
 
   /* Width of data in network order. */
-  uint32_t hdr_width = width;
+  uint32_t hdr_width = data_width;
   hdr_width = htonl(hdr_width);
   memcpy(header + 6, &hdr_width, 4);
   
   /* Load data into row_pointers image data. */
   int data_len, offset;
-  int i;
-  int datbytes = rowbytes - csum;
   void *next_data = data;
-  for (i = 0; i < rp_height; i++)
+  int i;
+  for (i = 0; i < img_height; i++)
     {
       row_pointers[i] = (png_bytep) calloc(1, rowbytes);
       
-      if (i == 0)
+      /* Write the header. */
+      if (i == y_pos)
 	{
-	  /* Write the header. */
 	  memcpy(row_pointers[0], &header, header_size);
 	  offset = header_size;
 	}
@@ -80,7 +113,7 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       
       /* 8-bit depth only: */ 
 
-      data_len = (i + 1) * datbytes - header_size;
+      data_len = (i - y_pos + 1) * datbytes - header_size;
       if (data_len > data_size)
 	data_len = data_size - (data_len - datbytes);
       else
@@ -89,7 +122,7 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       if (data_len < 0)
 	data_len = 0;
       
-      memcpy(row_pointers[i] + offset, next_data, data_len);
+      memcpy(row_pointers[i] + offset + (x_pos * 3), next_data, data_len);
       next_data += data_len;
       
       /* Calculate the checksum. */
@@ -97,16 +130,16 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 	{
 	  int j;
 	  uint8_t sum = 0;
-	  for (j = 0; j < datbytes; j++)
+	  for (j = (x_pos * 3); j < datbytes + (x_pos * 3); j++)
 	    sum += row_pointers[i][j];
 
-	  row_pointers[i][rowbytes - 1] = sum;
+	  row_pointers[i][(x_pos * 3) + datbytes] = sum;
 	}
     }
 
   /* Set image meta data. */
-  info_ptr->width = dat_info->png_width;
-  info_ptr->height = rp_height;
+  info_ptr->width = img_width;
+  info_ptr->height = img_height;
   info_ptr->valid = 0;
   info_ptr->rowbytes = rowbytes;
   info_ptr->palette = NULL;
@@ -126,5 +159,5 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   png_write_image(png_ptr, row_pointers);
   png_write_end(png_ptr, NULL);
   
-  return EXIT_SUCCESS;
+  return PNGDAT_SUCCESS;
 }

@@ -19,6 +19,7 @@ static int img_height = 0;
 static int x_pos = 0;
 static int y_pos = 0;
 static int auto_detect = 1;
+static int bit_depth = 8;
 
 static int verbose_flag = 0;
 static int checksum = 1;
@@ -64,6 +65,7 @@ int print_usage(int exit_status)
 	 img_width);
   printf("  -h, --img-height   Height of the image (default %d)\n", 
 	 img_height);
+  printf("  -d, --bit-depth    PNG bit depth (default %d)\n", bit_depth);
 
   /* Extraction options. */
   printf("\nExtraction Options:\n\n");
@@ -101,6 +103,7 @@ int main(int argc, char **argv)
 	  {"no-checksum", no_argument,       0, 'n'},
 	  {"x-position",  required_argument, 0, 'X'},
 	  {"y-position",  required_argument, 0, 'Y'},
+	  {"bit-depth",   required_argument, 0, 'd'},
 
 	  /* Auto-detect options. */
 	  {"--no-auto-detect", no_argument, &auto_detect, 0},
@@ -164,18 +167,52 @@ int main(int argc, char **argv)
      
              case 'w':
 	       data_width = atoi(optarg);
+	       auto_detect = 0;
                break;
      
              case 'h':
 	       data_height = atoi(optarg);
+	       if (auto_detect)
+		 {
+		   data_width = 0;
+		   auto_detect = 0;
+		 }
                break;
      
              case 'W':
 	       img_width = atoi(optarg);
+	       if (auto_detect)
+		 {
+		   data_width = 0;
+		   auto_detect = 0;
+		 }
                break;
      
              case 'H':
 	       img_height = atoi(optarg);
+	       if (auto_detect)
+		 {
+		   data_width = 0;
+		   auto_detect = 0;
+		 }
+               break;
+     
+             case 'X':
+	       x_pos = atoi(optarg);
+	       if (auto_detect)
+		 {
+		   data_width = 0;
+		   auto_detect = 0;
+		 }
+               break;
+     
+             case 'Y':
+	       y_pos = atoi(optarg);
+	       if (auto_detect)
+		 {
+		   data_width = 0;
+		   auto_detect = 0;
+		 }
                break;
      
              case 't':
@@ -183,6 +220,10 @@ int main(int argc, char **argv)
      
              case 'n':
 	       checksum = 0;
+               break;
+     
+             case 'd':
+	       bit_depth = atoi(optarg);
                break;
      
              case '?':
@@ -238,14 +279,26 @@ int decode_dat(char *filename)
 {
   /* Set the necessary meta data. */
   datpng_info data_info;
-  data_info.bit_depth = 8;
+  data_info.bit_depth = bit_depth;
   data_info.checksum = 0;
-  data_info.x_pos = 0;
-  data_info.y_pos = 0;
-  data_info.data_width = img_width;
-  data_info.data_height = 0;
-  data_info.png_width = img_width;
-  data_info.png_height = 0;
+  if (!auto_detect)
+    {
+      data_info.x_pos = x_pos;
+      data_info.y_pos = y_pos;
+      data_info.data_width = data_width;
+      data_info.data_height = data_height;
+      data_info.png_width = img_width;
+      data_info.png_height = img_height;
+    }
+  else
+    {
+      data_info.x_pos = 0;
+      data_info.y_pos = 0;
+      data_info.data_width = 0;
+      data_info.data_height = 0;
+      data_info.png_width = 0;
+      data_info.png_height = 0;      
+    }
 
   FILE *fp;
   if (strcmp(filename, "-") == 0)
@@ -255,7 +308,7 @@ int decode_dat(char *filename)
       fp = fopen(filename, "rb");
       if (fp == NULL)	
 	{
-	  fprintf(stderr, "%s: Failed to open file %s - %s", 
+	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, filename, strerror(errno));
 	  exit(EXIT_FAILURE);
 	}
@@ -265,7 +318,6 @@ int decode_dat(char *filename)
   size_t buffer_size = 0;
   void *buffer;
   datpng_read(fp, &data_info, &buffer, &buffer_size);
-  //  printf(buffer + strlen(buffer) + 1);
 
   if (strcmp(filename, "-") != 0)
     fclose(fp);
@@ -274,7 +326,7 @@ int decode_dat(char *filename)
   char *outfile = strdup(buffer);
   if (outfile == NULL)
     {
-      fprintf(stderr, "%s: failed strdup - %s", progname, strerror(errno));
+      fprintf(stderr, "%s: failed strdup - %s\n", progname, strerror(errno));
       exit(EXIT_FAILURE);
     }
   
@@ -284,9 +336,9 @@ int decode_dat(char *filename)
   else
     {
       fw = fopen(outfile, "wb");
-      if (fp == NULL)	
+      if (fw == NULL)	
 	{
-	  fprintf(stderr, "%s: Failed to open file %s - %s", 
+	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, outfile, strerror(errno));
 	  exit(EXIT_FAILURE);
 	}
@@ -369,15 +421,15 @@ int encode_dat(char *infile)
     fclose(fin);
   
   /* Setup meta data. */
-  datpng_info data_info; 
-  data_info.bit_depth = 8;
+  datpng_info data_info;
+  data_info.bit_depth = bit_depth;
   data_info.checksum = checksum;
-  data_info.x_pos = 0;
-  data_info.y_pos = 0;
-  data_info.data_width = img_width;
-  data_info.data_height = 0;
+  data_info.x_pos = x_pos;
+  data_info.y_pos = y_pos;
+  data_info.data_width = data_width;
+  data_info.data_height = data_height;
   data_info.png_width = img_width;
-  data_info.png_height = 0;
+  data_info.png_height = img_height;
   
   FILE *fp;
   if (strcmp(outfile, "-") == 0)

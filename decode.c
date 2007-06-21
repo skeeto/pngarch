@@ -9,6 +9,9 @@
 int datpng_read(FILE *infile, datpng_info *dat_info, 
 		void **data, size_t *data_size)
 {
+  int x_pos = dat_info->x_pos;
+  int y_pos = dat_info->y_pos;
+  
   /* Prepare png data structures. */
   png_structp png_ptr = png_create_read_struct
     (PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
@@ -38,15 +41,11 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
   int width = (int)ntohl(*((uint32_t *)(header + 6)));
   
   *data = calloc(1, *data_size);
-  
+
   int byte_depth = 1; /* 8-bit depth */
 
-  /* int width = dat_info->data_width; 
-  if (width == 0)
-  width = info_ptr->width; */
-
   int rowbytes = info_ptr->width * 3 * byte_depth;
-  int datbytes = rowbytes - csum;
+  int datbytes = width * 3 - csum;
   
   int amt = 0, i = 0;
   int offset, data_len;
@@ -60,8 +59,8 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
       data_len = datbytes - offset;
       if (data_len + amt > *data_size)
 	data_len = *data_size - amt;
-      
-      memcpy(*data + amt, row_pointers[i] + offset, data_len);
+
+      memcpy(*data + amt, row_pointers[i] + offset + (x_pos * 3), data_len);
       amt += data_len;
       
       /* Check data integrity. */
@@ -69,15 +68,15 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
 	{
 	  int j;
 	  uint8_t sum = 0;
-	  for (j = 0; j < datbytes; j++)
+	  for (j = (x_pos * 3); j < datbytes + (x_pos * 3); j++)
 	    sum += row_pointers[i][j];
 
-	  if (row_pointers[i][rowbytes - 1] != sum)
+	  if (row_pointers[i][datbytes + (x_pos * 3)] != sum)
 	    fprintf(stderr, "Warning: checksum failed!\n");
 	}
       
       i++;
     }
-  
+
   return 0;
 }
