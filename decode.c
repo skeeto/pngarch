@@ -25,7 +25,7 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
   
   /* Grab the header. */
   uint8_t header[10];
-  memcpy(header, row_pointers[y_pos], header_size);
+  memcpy(header, row_pointers[y_pos] + (x_pos * 3), header_size);
   
   /* Extract version information. */
   int bit_depth = (int)(header[1] & 0x0F);

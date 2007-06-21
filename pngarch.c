@@ -385,7 +385,7 @@ int encode_dat(char *infile)
       fin = fopen(infile, "rb");
       if (fin == NULL)
 	{
-	  fprintf(stderr, "%s: Failed to open file %s - %s", 
+	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, infile, strerror(errno));
 	  exit(EXIT_FAILURE);
 	}
@@ -393,7 +393,7 @@ int encode_dat(char *infile)
       outfile = (char *)malloc(strlen(infile) + 5);
       if (outfile == NULL)
 	{
-	  fprintf(stderr, "%s: Failed to malloc outfilename - %s", 
+	  fprintf(stderr, "%s: Failed to malloc outfilename - %s\n", 
 		  progname, strerror(errno));
 	  exit(EXIT_FAILURE);
 	}

@@ -105,7 +105,7 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       /* Write the header. */
       if (i == y_pos)
 	{
-	  memcpy(row_pointers[y_pos], &header, header_size);
+	  memcpy(row_pointers[y_pos] + (x_pos * 3), &header, header_size);
 	  offset = header_size;
 	}
       else
