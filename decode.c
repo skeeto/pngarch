@@ -25,7 +25,7 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
   
   /* Grab the header. */
   uint8_t header[10];
-  memcpy(header, row_pointers[0], header_size);
+  memcpy(header, row_pointers[y_pos], header_size);
   
   /* Extract version information. */
   int bit_depth = (int)(header[1] & 0x0F);
@@ -51,7 +51,7 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
   int offset, data_len;
   while (amt < *data_size)
     {
-      if (i == 0)
+      if (i == y_pos)
 	offset = header_size;
       else
 	offset = 0;
@@ -59,12 +59,19 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
       data_len = datbytes - offset;
       if (data_len + amt > *data_size)
 	data_len = *data_size - amt;
-
-      memcpy(*data + amt, row_pointers[i] + offset + (x_pos * 3), data_len);
-      amt += data_len;
       
+      int read_in;
+      read_in = 0;
+      if (i >= y_pos)
+	{
+	  memcpy(*data + amt, row_pointers[i] + offset + (x_pos * 3),
+		 data_len);
+	  amt += data_len;
+	  read_in = 1;
+	}
+
       /* Check data integrity. */
-      if (csum)
+      if (csum && read_in)
 	{
 	  int j;
 	  uint8_t sum = 0;

@@ -346,7 +346,7 @@ int decode_dat(char *filename)
   
   int boff = strlen(outfile) + 1;
   fwrite(buffer + boff, buffer_size - boff, 1, fw);
-  
+
   if (strlen(outfile) != 0)
     fclose(fw);
   

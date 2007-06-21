@@ -105,7 +105,7 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       /* Write the header. */
       if (i == y_pos)
 	{
-	  memcpy(row_pointers[0], &header, header_size);
+	  memcpy(row_pointers[y_pos], &header, header_size);
 	  offset = header_size;
 	}
       else
@@ -122,11 +122,18 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       if (data_len < 0)
 	data_len = 0;
       
-      memcpy(row_pointers[i] + offset + (x_pos * 3), next_data, data_len);
-      next_data += data_len;
+      int write_out;
+      write_out = 0;
+      if (i >= y_pos && data_len > 0)
+	{
+	  memcpy(row_pointers[i] + offset + (x_pos * 3), 
+		 next_data, data_len);
+	  next_data += data_len;
+	  write_out = 1;
+	}
       
       /* Calculate the checksum. */
-      if (csum)
+      if (csum && write_out)
 	{
 	  int j;
 	  uint8_t sum = 0;
