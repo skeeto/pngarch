@@ -22,6 +22,7 @@ static int auto_detect = 1;
 static int bit_depth = 8;
 
 static int verbose_flag = 0;
+static int brief_flag = 0;
 static int checksum = 1;
 char *progname;
 
@@ -47,6 +48,7 @@ int print_usage(int exit_status)
   printf("  -c, --create       Create PNG Archive\n");
   printf("  -x, --extract      Extract PNG Archive\n");
   printf("  -v, --verbose      Enable verbose output\n");
+  printf("  -b, --brief        Enable verbose output\n");
   printf("  -V, --version      Display version information\n");
   printf("  -!, --help         Display this help text\n");
 
@@ -95,6 +97,7 @@ int main(int argc, char **argv)
 	  {"help",        no_argument,       0, '?'},
 	  {"version",     no_argument,       0, 'V'},
 	  {"verbose",     no_argument,       0, 'v'},
+	  {"brief",       no_argument,       0, 'b'},
 	  {"extract",     no_argument,       0, 'x'},
 	  {"create",      no_argument,       0, 'c'},
 	  {"data-width",  required_argument, 0, 'w'},
@@ -114,7 +117,7 @@ int main(int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "vVxcw:h:tn!X:Y:H:W:",
+      c = getopt_long (argc, argv, "vbVxcw:h:tn!X:Y:H:W:",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -133,6 +136,10 @@ int main(int argc, char **argv)
      
              case 'v':
 	       verbose_flag = 1;
+               break;
+     
+             case 'b':
+	       brief_flag = 1;
                break;
      
              case 'x':
@@ -446,7 +453,12 @@ int encode_dat(char *infile)
     }
 
   /* Finally we get to write the data out to a PNG. */
-  datpng_write(fp, &data_info, buffer, buffer_size);
+  int ret;
+  ret = datpng_write(fp, &data_info, buffer, buffer_size);
+  if (ret == PNGDAT_TRUNCATED && !brief_flag)
+    {
+      fprintf(stderr, "Warning: data has been truncated.\n");
+    }
 
   if (strcmp(outfile, "-") != 0)
     fclose(fp);

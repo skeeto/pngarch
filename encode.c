@@ -15,6 +15,8 @@ short cur_ver = 0;
 int datpng_write(FILE *outfile, datpng_info *dat_info, 
 		 void *data, size_t data_size)
 {
+  int exit_stat = EXIT_SUCCESS;
+  
   int byte_depth = 1;
   int csum = dat_info->checksum;  
 
@@ -65,7 +67,13 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   
   int rowbytes = img_width * 3 * byte_depth;
   int datbytes = data_width * 3 * byte_depth - csum;
-
+  
+  if (datbytes * data_height < data_size)
+    {
+      data_size = datbytes * data_height - header_size;
+      exit_stat = PNGDAT_TRUNCATED;
+    }
+  
   /* Image data */
   png_bytep *row_pointers; 
   row_pointers = (png_bytep *)
@@ -167,5 +175,5 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   png_write_image(png_ptr, row_pointers);
   png_write_end(png_ptr, NULL);
   
-  return PNGDAT_SUCCESS;
+  return exit_stat;
 }
