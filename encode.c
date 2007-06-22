@@ -45,20 +45,21 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   if (img_width == 0 && data_width == 0)
     {
       /* Calculate a width. */
-      data_width = (int)ceil((data_size + header_size) / data_height); 
+      data_width = (int)ceil((data_size + header_size)
+				 / (data_height * 3.0)); 
       if (csum)
 	data_width = (int)ceil((data_size + header_size + data_height)
-			       / data_height);
+			       / (data_height * 3.0));
       img_width = data_width + x_pos;
     }
   if (img_height == 0 && data_height == 0)
     {
       /* Calculate a height. */
-      data_height = 1 + (int)ceil((data_size + header_size) 
-			      / (data_width * 3)); 
+      data_height = (int)ceil((data_size + header_size) 
+			      / (data_width * 3.0)); 
       if (csum)
-	data_height = 1 + (int)ceil((data_size + header_size + data_height)
-				/ (data_width * 3));
+	data_height = (int)ceil((data_size + header_size + data_height)
+				/ (data_width * 3.0));
       img_height = data_height + y_pos;
     }
   
