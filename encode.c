@@ -34,10 +34,10 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 
   /* Propagate width value. */
   if (img_width == 0 && data_width > 0)
-    img_width = data_width - x_pos;
+    img_width = data_width + x_pos;
   if (img_width > 0 && data_width == 0)
-    data_width = img_width + x_pos;
-
+    data_width = img_width - x_pos;
+  
   /* Propagate height value. */
   if (img_height == 0 && data_height > 0)
     img_height = data_height - y_pos;
