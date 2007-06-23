@@ -3,6 +3,7 @@
 #include <getopt.h>
 #include <errno.h>
 #include <string.h>
+#include <math.h>
 #include "datpng.h"
 
 #ifdef HAVE_CONFIG_H
@@ -12,7 +13,7 @@ char *version = PACKAGE_VERSION;
 char *version = "";
 #endif
 
-static int data_width = 250;
+static int data_width = 0;
 static int data_height = 0;
 static int img_width = 0;
 static int img_height = 0;
@@ -24,6 +25,7 @@ static int bit_depth = 8;
 static int verbose_flag = 0;
 static int brief_flag = 0;
 static int list_flag = 0;
+static int square_flag = 1;
 static int checksum = 1;
 char *progname;
 
@@ -187,52 +189,34 @@ int main(int argc, char **argv)
      
              case 'w':
 	       data_width = atoi(optarg);
-	       auto_detect = 0;
+	       square_flag = 0;
                break;
      
              case 'h':
 	       data_height = atoi(optarg);
-	       if (auto_detect)
-		 {
-		   data_width = 0;
-		   auto_detect = 0;
-		 }
+	       square_flag = 0;
                break;
      
              case 'W':
 	       img_width = atoi(optarg);
-	       if (auto_detect)
-		 {
-		   data_width = 0;
-		   auto_detect = 0;
-		 }
+	       square_flag = 0;
                break;
      
              case 'H':
 	       img_height = atoi(optarg);
-	       if (auto_detect)
-		 {
-		   data_width = 0;
-		   auto_detect = 0;
-		 }
+	       square_flag = 0;
                break;
      
              case 'X':
 	       x_pos = atoi(optarg);
-	       if (auto_detect)
-		 {
-		   data_width = 0;
-		   auto_detect = 0;
-		 }
+	       square_flag = 0;
+	       auto_detect = 0;
                break;
      
              case 'Y':
 	       y_pos = atoi(optarg);
-	       if (auto_detect)
-		 {
-		   data_width = 0;
-		   auto_detect = 0;
-		 }
+	       auto_detect = 0;
+	       square_flag = 0;
                break;
      
              case 't':
@@ -486,6 +470,10 @@ int encode_dat(char *infile, char *outfile)
   
   if (strcmp(infile, "-") != 0)
     fclose(fin);
+  
+  /* Make image square. */ 
+  if (square_flag)
+    data_width = ceil(sqrt(buffer_size / 3.0));
   
   /* Setup meta data. */
   datpng_info data_info;
