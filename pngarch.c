@@ -23,6 +23,7 @@ static int bit_depth = 8;
 
 static int verbose_flag = 0;
 static int brief_flag = 0;
+static int list_flag = 0;
 static int checksum = 1;
 char *progname;
 
@@ -86,6 +87,8 @@ int main(int argc, char **argv)
   int auto_mode = 1; /* Auto detect mode. */
   int create_mode = 0; /* Create archive. */
   int extract_mode = 0; /* Extract archive. */
+
+  int exit_stat = 0;
   
   int c; /* Current option. */
   
@@ -223,6 +226,7 @@ int main(int argc, char **argv)
                break;
      
              case 't':
+	       list_flag = 1;
                break;
      
              case 'n':
@@ -242,15 +246,17 @@ int main(int argc, char **argv)
              }
          }
 
+  int ret = 0; /* Return value. */
+  
   /* Extract from the archive. */
   if (extract_mode == 1)
     {
       int i;
       for (i = optind; i < argc; i++)
-	decode_dat(argv[i]);
+	ret = ret || decode_dat(argv[i]);
 
       if (argc == optind)
-	decode_dat("-");
+	ret = decode_dat("-");
     }
   
   /* Create new archive. */
@@ -258,28 +264,31 @@ int main(int argc, char **argv)
     {
       int i;
       for (i = optind; i < argc; i++)
-	encode_dat(argv[i]);
+	ret = ret || encode_dat(argv[i]);
 
       if (argc == optind)
-	encode_dat("-");
+	ret = encode_dat("-");
     }
 
   /* Automode - method based on filename extension. */
   if (auto_mode)
     {
       if (argc == optind)
-	encode_dat("-");
+	ret = encode_dat("-");
       else
 	{
 	  int i;
 	  for (i = optind; i < argc; i++)
 	    {
-	      auto_dat(argv[i]);      
+	      ret = ret || auto_dat(argv[i]);      
 	    }
 	}
     }
   
-  exit(EXIT_SUCCESS);
+  if (ret != 0)
+    exit_stat = EXIT_FAILURE;
+  
+  exit(exit_stat);
 }
 
 int decode_dat(char *filename)
@@ -321,7 +330,7 @@ int decode_dat(char *filename)
 	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, filename, strerror(errno));
-	  exit(EXIT_FAILURE);
+	 return 1;
 	}
     }
   
@@ -359,6 +368,15 @@ int decode_dat(char *filename)
       exit(EXIT_FAILURE);
     }
   
+  if (list_flag)
+    {
+      if (strlen(outfile) == 0)
+	printf("(stdout)\n");
+      else
+	printf("%s\n", outfile);
+      return 0;
+    }
+  
   FILE *fw;
   if (strlen(outfile) == 0)
     fw = stdout;
@@ -369,7 +387,7 @@ int decode_dat(char *filename)
 	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, outfile, strerror(errno));
-	  exit(EXIT_FAILURE);
+	  return 1;
 	}
     }
   
@@ -416,7 +434,7 @@ int encode_dat(char *infile)
 	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, infile, strerror(errno));
-	  exit(EXIT_FAILURE);
+	  return 1;
 	}
       
       outfile = (char *)malloc(strlen(infile) + 5);
@@ -472,7 +490,7 @@ int encode_dat(char *infile)
     	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s", 
 		  progname, infile, strerror(errno));
-	  exit(EXIT_FAILURE);
+	  return 1;
 	}
     }
 
@@ -480,9 +498,7 @@ int encode_dat(char *infile)
   int ret;
   ret = datpng_write(fp, &data_info, buffer, buffer_size);
   if (ret == PNGDAT_TRUNCATED && !brief_flag)
-    {
-      fprintf(stderr, "Warning: data has been truncated.\n");
-    }
+    fprintf(stderr, "Warning: data has been truncated.\n");
 
   if (strcmp(outfile, "-") != 0)
     fclose(fp);
