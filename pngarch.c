@@ -296,6 +296,8 @@ int decode_dat(char *filename)
       data_info.data_height = data_height;
       data_info.png_width = img_width;
       data_info.png_height = img_height;
+      data_info.ignore_checksum = !checksum;
+      data_info.no_warnings = brief_flag;
     }
   else
     {
@@ -304,7 +306,9 @@ int decode_dat(char *filename)
       data_info.data_width = 0;
       data_info.data_height = 0;
       data_info.png_width = 0;
-      data_info.png_height = 0;      
+      data_info.png_height = 0;
+      data_info.ignore_checksum = 0;
+      data_info.no_warnings = 1;
     }
 
   FILE *fp;
@@ -324,7 +328,25 @@ int decode_dat(char *filename)
   /* Get data from the PNG file. */
   size_t buffer_size = 0;
   void *buffer;
-  datpng_read(fp, &data_info, &buffer, &buffer_size);
+  int ret;
+  if (auto_detect)
+    {
+      ret = datpng_autoread(fp, &data_info, &buffer, &buffer_size);
+      if (ret > 0)
+	{
+	  fprintf(stderr, "%s: failed to find data in PNG\n", progname);
+	  return 1;
+	}
+    }
+  else
+    {
+      ret = datpng_read(fp, &data_info, &buffer, &buffer_size); 
+      if (ret > 0)
+	{
+	  fprintf(stderr, "%s: data in PNG corrupt\n", progname);
+	  return 1;
+	}
+    }
 
   if (strcmp(filename, "-") != 0)
     fclose(fp);
@@ -437,6 +459,8 @@ int encode_dat(char *infile)
   data_info.data_height = data_height;
   data_info.png_width = img_width;
   data_info.png_height = img_height;
+  data_info.ignore_checksum = 0;
+  data_info.no_warnings = brief_flag;
   
   FILE *fp;
   if (strcmp(outfile, "-") == 0)
