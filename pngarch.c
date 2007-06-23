@@ -306,7 +306,7 @@ int decode_dat(char *filename, char *outfile)
       data_info.data_height = data_height;
       data_info.png_width = img_width;
       data_info.png_height = img_height;
-      data_info.ignore_checksum = !checksum;
+      data_info.checksum = checksum;
       data_info.no_warnings = brief_flag;
     }
   else
@@ -317,7 +317,7 @@ int decode_dat(char *filename, char *outfile)
       data_info.data_height = 0;
       data_info.png_width = 0;
       data_info.png_height = 0;
-      data_info.ignore_checksum = 0;
+      data_info.checksum = 1;
       data_info.no_warnings = 1;
     }
 
@@ -485,7 +485,6 @@ int encode_dat(char *infile, char *outfile)
   data_info.data_height = data_height;
   data_info.png_width = img_width;
   data_info.png_height = img_height;
-  data_info.ignore_checksum = 0;
   data_info.no_warnings = brief_flag;
   
   FILE *fp;

@@ -96,7 +96,7 @@ int datpng_read(FILE *infile, datpng_info *dat_info,
 	    {
 	      if (!dat_info->no_warnings)
 		fprintf(stderr, "Warning: checksum failed!\n");
-	      if (!dat_info->ignore_checksum)
+	      if (dat_info->checksum)
 		{
 		  png_destroy_read_struct(&png_ptr, &info_ptr, NULL);
 		  free(*data);
