@@ -27,9 +27,9 @@ static int list_flag = 0;
 static int checksum = 1;
 char *progname;
 
-int decode_dat(char *);
-int encode_dat(char *);
-int auto_dat(char *filename);
+int decode_dat(char *infile, char *outfile);
+int encode_dat(char *infile, char *outfile);
+int auto_dat(char *filename, char *outfile);
 
 void print_version()
 {
@@ -51,6 +51,7 @@ int print_usage(int exit_status)
   printf("  -v, --verbose      Enable verbose output\n");
   printf("  -b, --brief        Enable verbose output\n");
   printf("  -V, --version      Display version information\n");
+  printf("  -o, --output       Set the output file name\n");
   printf("  -!, --help         Display this help text\n");
 
   /* Archive options. */
@@ -77,6 +78,8 @@ int print_usage(int exit_status)
 	 "automatically. (default)\n");
   printf("  --no-auto-detect   Do not attempt to find image data "
 	 "automatically.\n");
+  printf("  -n, --no-checksum  Ignore bad checksums\n");
+
   exit(exit_status);
 }
 
@@ -88,7 +91,9 @@ int main(int argc, char **argv)
   int create_mode = 0; /* Create archive. */
   int extract_mode = 0; /* Extract archive. */
 
-  int exit_stat = 0;
+  int exit_stat = EXIT_SUCCESS; /* Program exit status */
+  
+  char *outfile = NULL; /* User selected output file. */
   
   int c; /* Current option. */
   
@@ -101,6 +106,7 @@ int main(int argc, char **argv)
 	  {"version",     no_argument,       0, 'V'},
 	  {"verbose",     no_argument,       0, 'v'},
 	  {"brief",       no_argument,       0, 'b'},
+	  {"output",      required_argument, 0, 'o'},
 	  {"extract",     no_argument,       0, 'x'},
 	  {"create",      no_argument,       0, 'c'},
 	  {"data-width",  required_argument, 0, 'w'},
@@ -120,7 +126,7 @@ int main(int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "vbVxcw:h:tn!X:Y:H:W:",
+      c = getopt_long (argc, argv, "vbVxcw:h:tno:!X:Y:H:W:",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -144,7 +150,11 @@ int main(int argc, char **argv)
              case 'b':
 	       brief_flag = 1;
                break;
-     
+	       
+             case 'o':
+	       outfile = optarg;
+               break;
+	            
              case 'x':
 	       if (!create_mode)
 		 {
@@ -245,7 +255,14 @@ int main(int argc, char **argv)
                abort ();
              }
          }
-
+  
+  if ((outfile != NULL) && (argc - optind > 1))
+    {
+      fprintf(stderr, "%s: cannot specify more than one input file with"
+	      " -o option\n", progname);
+      exit(EXIT_FAILURE);
+    }
+  
   int ret = 0; /* Return value. */
   
   /* Extract from the archive. */
@@ -253,10 +270,10 @@ int main(int argc, char **argv)
     {
       int i;
       for (i = optind; i < argc; i++)
-	ret = ret || decode_dat(argv[i]);
+	ret = ret || decode_dat(argv[i], outfile);
 
       if (argc == optind)
-	ret = decode_dat("-");
+	ret = decode_dat("-", outfile);
     }
   
   /* Create new archive. */
@@ -264,23 +281,23 @@ int main(int argc, char **argv)
     {
       int i;
       for (i = optind; i < argc; i++)
-	ret = ret || encode_dat(argv[i]);
+	ret = ret || encode_dat(argv[i], outfile);
 
       if (argc == optind)
-	ret = encode_dat("-");
+	ret = encode_dat("-", outfile);
     }
 
   /* Automode - method based on filename extension. */
   if (auto_mode)
     {
       if (argc == optind)
-	ret = encode_dat("-");
+	ret = encode_dat("-", outfile);
       else
 	{
 	  int i;
 	  for (i = optind; i < argc; i++)
 	    {
-	      ret = ret || auto_dat(argv[i]);      
+	      ret = ret || auto_dat(argv[i], outfile);      
 	    }
 	}
     }
@@ -291,7 +308,7 @@ int main(int argc, char **argv)
   exit(exit_stat);
 }
 
-int decode_dat(char *filename)
+int decode_dat(char *filename, char *outfile)
 {
   /* Set the necessary meta data. */
   datpng_info data_info;
@@ -361,7 +378,8 @@ int decode_dat(char *filename)
     fclose(fp);
   
   /* Unload the data into the file named by the internal filename. */
-  char *outfile = strdup(buffer);
+  if (outfile == NULL)
+    outfile = strdup(buffer);
   if (outfile == NULL)
     {
       fprintf(stderr, "%s: failed strdup - %s\n", progname, strerror(errno));
@@ -403,12 +421,10 @@ int decode_dat(char *filename)
   return 0;
 }
 
-int encode_dat(char *infile)
+int encode_dat(char *infile, char *outfile)
 {
   if (verbose_flag)
     fprintf(stderr, "Encoding %s\n", infile);
-  
-  char *outfile; /* Output filename. */
   
   /* Prepare input buffer */
   size_t read_size = 1024; /* Reading in 1 kbyte at a time. */
@@ -419,7 +435,8 @@ int encode_dat(char *infile)
   FILE *fin; /* input file pointer */
   if (strcmp(infile, "-") == 0)
     {
-      outfile = "-";
+      if (outfile == NULL)
+	outfile = "-";
       buffer_size += 1;
       strncpy(buffer, "", buffer_max);
       fin = stdin;
@@ -436,15 +453,18 @@ int encode_dat(char *infile)
 		  progname, infile, strerror(errno));
 	  return 1;
 	}
-      
-      outfile = (char *)malloc(strlen(infile) + 5);
+     
       if (outfile == NULL)
-	{
-	  fprintf(stderr, "%s: Failed to malloc outfilename - %s\n", 
-		  progname, strerror(errno));
-	  exit(EXIT_FAILURE);
+	{ 
+	  outfile = (char *)malloc(strlen(infile) + 5);
+	  if (outfile == NULL)
+	    {
+	      fprintf(stderr, "%s: Failed to malloc outfilename - %s\n", 
+		      progname, strerror(errno));
+	      exit(EXIT_FAILURE);
+	    }
+	  snprintf(outfile, strlen(infile) + 5, "%s.png", infile);
 	}
-      snprintf(outfile, strlen(infile) + 5, "%s.png", infile);
     }
 
   /* Read file into the buffer. */
@@ -509,11 +529,11 @@ int encode_dat(char *infile)
 }
 
 /* Autodetect what to do by filename extension. */
-int auto_dat(char *filename)
+int auto_dat(char *filename, char *outfile)
 {
   if (strstr(filename, ".png") == filename + strlen(filename) - 4 ||
       strstr(filename, ".PNG") == filename + strlen(filename) - 4)
-    return decode_dat(filename);
+    return decode_dat(filename, outfile);
   else
-    return encode_dat(filename);
+    return encode_dat(filename, outfile);
 }
