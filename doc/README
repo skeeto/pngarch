@@ -1,0 +1,9 @@
+PNG Archiver documentation directory
+
+The man page documentation is created using help2man with this
+command:
+
+help2man pngarch -i pngarch_extra.txt > pngarch.1
+
+The file pngarch_man.txt contains extra documentation not produced by
+the --help option from pngarch.

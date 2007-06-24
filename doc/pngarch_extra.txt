@@ -1,0 +1,29 @@
+[name]
+
+pngarch - store a file as visible data in a PNG image
+
+[description]
+
+pngarch, the PNG Archiver, stores a single file in a PNG image. This
+file will (probably) look like random mess in the image. The image can
+later be extracted using pngarch. The name of the file that was
+archived is stored with the data right inside the image. The data in
+the PNG image includes checksums, which will verify that data in the
+image has not been corrupted.
+
+The program behaves in a very similar way to gzip: when archiving a
+file, the output image file name is the same as the input file, but
+with `.png' appended. When pngarch is called with a file name with a
+`.png' extension, pngarch will automatically attempt to extract an
+image. The output file name is stored in the PNG itself and does not
+depend on the name of the PNG file.
+
+Data can be stored at any location inside the PNG image. This can be
+set using the -XYWH options. With the -i or -o options, the data will
+be inserted on top of the existing image file, if it exists. This
+allows you to decorate a PNG archive ahead of time for later file
+insertion.
+
+When extracting a file, no positional information is needed. pngarch
+will scan the file looking for valid data (with the help of the
+built-in checksums).

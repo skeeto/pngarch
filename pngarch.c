@@ -39,7 +39,7 @@ int auto_dat (char *filename, char *outfile);
 
 void print_version ()
 {
-  printf ("PNG Archiver, version %s\n", version);
+  printf ("pngarch, version %s\n", version);
   printf ("Copyright (C) 2007 Chris Wellons\n");
   printf ("This is free software; see the source code for "
 	  "copying conditions.\n");
@@ -50,8 +50,6 @@ void print_version ()
 
 int print_usage (int exit_status)
 {
-  printf ("%s stores a single file inside of a PNG image\n\n", progname);
-
   printf ("Usage: %s [OPTION ...] [FILE ...]\n\n", progname);
   printf ("Options:\n\n");
   printf ("  -c, --create            Create PNG Archive\n");
