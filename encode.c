@@ -12,21 +12,21 @@
 int header_size = 10;
 short cur_ver = 0;
 
-int datpng_write(FILE *outfile, datpng_info *dat_info, 
-		 void *data, size_t data_size)
+int datpng_write (FILE * outfile, datpng_info * dat_info,
+		  void *data, size_t data_size)
 {
   int exit_stat = EXIT_SUCCESS;
-  
+
   int byte_depth = 1;
-  int csum = dat_info->checksum;  
+  int csum = dat_info->checksum;
 
   int x_pos = dat_info->x_pos;
   int y_pos = dat_info->y_pos;
   int data_width = dat_info->data_width;
-  int data_height = dat_info->data_height;  
+  int data_height = dat_info->data_height;
   int img_width = dat_info->png_width;
   int img_height = dat_info->png_height;
-  
+
   /* No constraints defined. */
   if (img_width == 0 && img_height == 0 &&
       data_width == 0 && data_height == 0)
@@ -37,51 +37,51 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
     img_width = data_width + x_pos;
   if (img_width > 0 && data_width == 0)
     data_width = img_width - x_pos;
-  
+
   /* Propagate height value. */
   if (img_height == 0 && data_height > 0)
     img_height = data_height - y_pos;
   if (img_height > 0 && data_height == 0)
     data_height = img_height + y_pos;
-  
+
   if (img_width == 0 && data_width == 0)
     {
       /* Calculate a width. */
-      data_width = (int)ceil((data_size + header_size)
-				 / (data_height * 3.0)); 
-      if (csum)
-	data_width = (int)ceil((data_size + header_size + data_height)
+      data_width = (int) ceil ((data_size + header_size)
 			       / (data_height * 3.0));
+      if (csum)
+	data_width = (int) ceil ((data_size + header_size + data_height)
+				 / (data_height * 3.0));
       img_width = data_width + x_pos;
     }
   if (img_height == 0 && data_height == 0)
     {
       /* Calculate a height. */
-      data_height = (int)ceil((data_size + header_size) 
-			      / (data_width * 3.0)); 
-      if (csum)
-	data_height = (int)ceil((data_size + header_size + data_height)
+      data_height = (int) ceil ((data_size + header_size)
 				/ (data_width * 3.0));
+      if (csum)
+	data_height = (int) ceil ((data_size + header_size + data_height)
+				  / (data_width * 3.0));
       img_height = data_height + y_pos;
     }
-    
+
   png_bytep *row_pointers;
 
   /* Set up the image data. */
   png_infop infoin_ptr;
-  png_structp pngin_ptr; 
+  png_structp pngin_ptr;
   if (dat_info->insert)
     {
       pngin_ptr = png_create_read_struct
 	(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
-      infoin_ptr = png_create_info_struct(pngin_ptr);
-      png_init_io(pngin_ptr, outfile);
-      png_read_png(pngin_ptr, infoin_ptr, PNG_TRANSFORM_STRIP_ALPHA, NULL);
+      infoin_ptr = png_create_info_struct (pngin_ptr);
+      png_init_io (pngin_ptr, outfile);
+      png_read_png (pngin_ptr, infoin_ptr, PNG_TRANSFORM_STRIP_ALPHA, NULL);
 
-      row_pointers = png_get_rows(pngin_ptr, infoin_ptr);
+      row_pointers = png_get_rows (pngin_ptr, infoin_ptr);
 
-      rewind(outfile);
-      
+      rewind (outfile);
+
       /* Check dimensions. */
       img_width = infoin_ptr->width;
       img_height = infoin_ptr->height;
@@ -92,43 +92,41 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
     }
   else
     {
-      row_pointers = (png_bytep *)
-	malloc(sizeof(png_bytep) * img_height);
+      row_pointers = (png_bytep *) malloc (sizeof (png_bytep) * img_height);
     }
-  
+
   int rowbytes = img_width * 3 * byte_depth;
   int datbytes = data_width * 3 * byte_depth - csum;
-  
+
   if (datbytes * data_height < data_size)
     {
       data_size = datbytes * data_height - header_size;
       exit_stat = PNGDAT_TRUNCATED;
     }
-  
+
   /* Initialize png structs. */
-  png_structp png_ptr = png_create_write_struct
-    (PNG_LIBPNG_VER_STRING, NULL,
-     NULL, NULL);
-  png_infop info_ptr = png_create_info_struct(png_ptr);
-  png_init_io(png_ptr, outfile);
-  
+  png_structp png_ptr = png_create_write_struct (PNG_LIBPNG_VER_STRING, NULL,
+						 NULL, NULL);
+  png_infop info_ptr = png_create_info_struct (png_ptr);
+  png_init_io (png_ptr, outfile);
+
   /* Generate the header. */
-  uint8_t header[10] = {0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-  header[1] = (uint8_t)dat_info->bit_depth;
+  uint8_t header[10] = { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0 };
+  header[1] = (uint8_t) dat_info->bit_depth;
   if (csum)
     header[0] = 128;
   header[0] += cur_ver;
-  
+
   /* Length of data in network order. */
-  uint32_t size = (int)data_size;
-  size = htonl(size);
-  memcpy(header + 2, &size, 4);
+  uint32_t size = (int) data_size;
+  size = htonl (size);
+  memcpy (header + 2, &size, 4);
 
   /* Width of data in network order. */
   uint32_t hdr_width = data_width;
-  hdr_width = htonl(hdr_width);
-  memcpy(header + 6, &hdr_width, 4);
-  
+  hdr_width = htonl (hdr_width);
+  memcpy (header + 6, &hdr_width, 4);
+
   /* Load data into row_pointers image data. */
   int data_len, offset;
   void *next_data = data;
@@ -136,38 +134,38 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   for (i = 0; i < img_height; i++)
     {
       if (!dat_info->insert)
-	row_pointers[i] = (png_bytep) calloc(1, rowbytes);
-      
+	row_pointers[i] = (png_bytep) calloc (1, rowbytes);
+
       /* Write the header. */
       if (i == y_pos)
 	{
-	  memcpy(row_pointers[y_pos] + (x_pos * 3), &header, header_size);
+	  memcpy (row_pointers[y_pos] + (x_pos * 3), &header, header_size);
 	  offset = header_size;
 	}
       else
 	offset = 0;
-      
-      /* 8-bit depth only: */ 
+
+      /* 8-bit depth only: */
 
       data_len = (i - y_pos + 1) * datbytes - header_size;
       if (data_len > data_size)
 	data_len = data_size - (data_len - datbytes);
       else
 	data_len = datbytes - offset;
-      
+
       if (data_len < 0)
 	data_len = 0;
-      
+
       int write_out;
       write_out = 0;
       if (i >= y_pos && data_len > 0)
 	{
-	  memcpy(row_pointers[i] + offset + (x_pos * 3), 
-		 next_data, data_len);
+	  memcpy (row_pointers[i] + offset + (x_pos * 3),
+		  next_data, data_len);
 	  next_data += data_len;
 	  write_out = 1;
 	}
-      
+
       /* Calculate the checksum. */
       if (csum && write_out)
 	{
@@ -193,14 +191,14 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   info_ptr->compression_type = PNG_COMPRESSION_TYPE_DEFAULT;
   info_ptr->filter_type = PNG_FILTER_TYPE_DEFAULT;
   info_ptr->interlace_type = PNG_INTERLACE_NONE;
-  
-  png_write_info(png_ptr, info_ptr);
-  
-  if (setjmp(png_jmpbuf(png_ptr)))
-    printf("[write_png_file] Error during write\n");
-  
-  png_write_image(png_ptr, row_pointers);
-  png_write_end(png_ptr, NULL);
-  
+
+  png_write_info (png_ptr, info_ptr);
+
+  if (setjmp (png_jmpbuf (png_ptr)))
+    printf ("[write_png_file] Error during write\n");
+
+  png_write_image (png_ptr, row_pointers);
+  png_write_end (png_ptr, NULL);
+
   return exit_stat;
 }
