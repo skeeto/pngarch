@@ -13,22 +13,25 @@ char *version = PACKAGE_VERSION;
 char *version = "";
 #endif
 
+/* Settings */
 static int data_width = 0;
 static int data_height = 0;
 static int img_width = 0;
 static int img_height = 0;
 static int x_pos = 0;
 static int y_pos = 0;
-static int auto_detect = 1;
 static int bit_depth = 8;
 
+/* Option flags */
 static int verbose_flag = 0;
 static int brief_flag = 0;
 static int list_flag = 0;
 static int square_flag = 1;
 static int insert_flag = 0;
+static int auto_detect = 1;
 static int checksum = 1;
-char *progname;
+
+char *progname;			/* Program name. */
 
 int decode_dat (char *infile, char *outfile);
 int encode_dat (char *infile, char *outfile);
@@ -44,6 +47,7 @@ void print_version ()
     ("There is ABSOLUTELY NO WARRANTY; not even for MERCHANTIBILITY or\n");
   printf ("FITNESS FOR A PARTICULAR PURPOSE.\n\n");
 }
+
 int print_usage (int exit_status)
 {
   print_version ();
@@ -61,9 +65,9 @@ int print_usage (int exit_status)
   /* Archive options. */
   printf ("\nArchiving Options:\n\n");
   printf ("  -n, --no-checksum  Do not add checksum to data\n");
-  printf ("  -w, --data-width   Width of data in the image (default %d)\n",
+  printf ("  -W, --data-width   Width of data in the image (default %d)\n",
 	  data_width);
-  printf ("  -h, --data-height  Height of data in the image (default %d)\n",
+  printf ("  -H, --data-height  Height of data in the image (default %d)\n",
 	  data_height);
   printf ("  -X, --x-position   Data distance from the left of the image"
 	  " (default %d)\n", x_pos);
@@ -95,37 +99,38 @@ int main (int argc, char **argv)
   int auto_mode = 1;		/* Auto detect mode. */
   int create_mode = 0;		/* Create archive. */
   int extract_mode = 0;		/* Extract archive. */
-
   int exit_stat = EXIT_SUCCESS;	/* Program exit status */
-
   char *outfile = NULL;		/* User selected output file. */
-
   int c;			/* Current option. */
 
   while (1)
     {
       static struct option long_options[] = {
+	/* *INDENT-OFF* */
 	/* These options set a flag. */
-	{"help", no_argument, 0, '?'},
-	{"version", no_argument, 0, 'V'},
-	{"verbose", no_argument, 0, 'v'},
-	{"brief", no_argument, 0, 'b'},
-	{"output", required_argument, 0, 'o'},
-	{"extract", no_argument, 0, 'x'},
-	{"create", no_argument, 0, 'c'},
-	{"data-width", required_argument, 0, 'w'},
-	{"data-height", required_argument, 0, 'h'},
-	{"list", no_argument, 0, 't'},
-	{"no-checksum", no_argument, 0, 'n'},
-	{"x-position", required_argument, 0, 'X'},
-	{"y-position", required_argument, 0, 'Y'},
-	{"bit-depth", required_argument, 0, 'd'},
-	{"insert", no_argument, 0, 'i'},
+	{"help",        no_argument,       0, '!'},
+	{"version",     no_argument,       0, 'V'},
+	{"verbose",     no_argument,       0, 'v'},
+	{"brief",       no_argument,       0, 'b'},
+	{"output",      required_argument, 0, 'o'},
+	{"extract",     no_argument,       0, 'x'},
+	{"create",      no_argument,       0, 'c'},
+	{"data-width",  required_argument, 0, 'W'},
+	{"data-height", required_argument, 0, 'H'},
+	{"img-width",   required_argument, 0, 'w'},
+	{"img-height",  required_argument, 0, 'h'},
+	{"list",        no_argument,       0, 't'},
+	{"no-checksum", no_argument,       0, 'n'},
+	{"x-position",  required_argument, 0, 'X'},
+	{"y-position",  required_argument, 0, 'Y'},
+	{"bit-depth",   required_argument, 0, 'd'},
+	{"insert",      no_argument,       0, 'i'},
 
 	/* Auto-detect options. */
 	{"--no-auto-detect", no_argument, &auto_detect, 0},
-	{"--auto-detect", no_argument, &auto_detect, 1},
+	{"--auto-detect",    no_argument, &auto_detect, 1},
 	{0, 0, 0, 0}
+	/* *INDENT-ON* */
       };
 
       /* getopt_long stores the option index here. */
@@ -140,32 +145,32 @@ int main (int argc, char **argv)
 
       switch (c)
 	{
-	case '!':
+	case '!':		/* help */
 	  print_usage (EXIT_SUCCESS);
 	  break;
 
-	case 'V':
+	case 'V':		/* version */
 	  print_version ();
 	  break;
 
-	case 'v':
+	case 'v':		/* verbose */
 	  verbose_flag = 1;
 	  break;
 
-	case 'b':
+	case 'b':		/* brief */
 	  brief_flag = 1;
 	  break;
 
-	case 'o':
+	case 'o':		/* output filename */
 	  outfile = optarg;
 	  insert_flag = 1;
 	  break;
 
-	case 'i':
+	case 'i':		/* insert */
 	  insert_flag = 1;
 	  break;
 
-	case 'x':
+	case 'x':		/* extract */
 	  if (!create_mode)
 	    {
 	      extract_mode = 1;
@@ -180,7 +185,7 @@ int main (int argc, char **argv)
 	    }
 	  break;
 
-	case 'c':
+	case 'c':		/* create */
 	  if (!extract_mode)
 	    {
 	      create_mode = 1;
@@ -195,55 +200,56 @@ int main (int argc, char **argv)
 	    }
 	  break;
 
-	case 'w':
+	case 'W':		/* data width */
 	  data_width = atoi (optarg);
 	  square_flag = 0;
 	  break;
 
-	case 'h':
+	case 'H':		/* data height */
 	  data_height = atoi (optarg);
 	  square_flag = 0;
 	  break;
 
-	case 'W':
+	case 'w':		/* image width */
 	  img_width = atoi (optarg);
 	  square_flag = 0;
 	  break;
 
-	case 'H':
+	case 'h':		/* image height */
 	  img_height = atoi (optarg);
 	  square_flag = 0;
 	  break;
 
-	case 'X':
+	case 'X':		/* data x position */
 	  x_pos = atoi (optarg);
 	  square_flag = 0;
 	  auto_detect = 0;
 	  break;
 
-	case 'Y':
+	case 'Y':		/* data y position */
 	  y_pos = atoi (optarg);
 	  auto_detect = 0;
 	  square_flag = 0;
 	  break;
 
-	case 't':
+	case 't':		/* list filename */
 	  list_flag = 1;
 	  break;
 
-	case 'n':
+	case 'n':		/* no checksum */
 	  checksum = 0;
 	  break;
 
-	case 'd':
+	case 'd':		/* image bit depth */
 	  bit_depth = atoi (optarg);
 	  break;
 
-	case '?':
+	case '?':		/* error */
 	  print_usage (EXIT_FAILURE);
 	  break;
 
 	default:
+	  fprintf (stderr, "You should not see this. File a bug report!\n");
 	  abort ();
 	}
     }
