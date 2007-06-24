@@ -45,3 +45,16 @@ Software Foundation raise funds for GNU development.''
 
 @insertcopying
 @end ifnottex
+
+@menu
+* Index::            Complete index.
+@end menu
+
+
+@c End the manual with the index.
+@node Index
+@unnumbered Index
+
+@printindex cp   
+
+@bye
