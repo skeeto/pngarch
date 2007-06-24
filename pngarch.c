@@ -43,51 +43,56 @@ void print_version ()
   printf ("Copyright (C) 2007 Chris Wellons\n");
   printf ("This is free software; see the source code for "
 	  "copying conditions.\n");
-  printf
-    ("There is ABSOLUTELY NO WARRANTY; not even for MERCHANTIBILITY or\n");
-  printf ("FITNESS FOR A PARTICULAR PURPOSE.\n\n");
+  printf ("There is ABSOLUTELY NO WARRANTY; not even for "
+	  "MERCHANTIBILITY or\n");
+  printf ("FITNESS FOR A PARTICULAR PURPOSE.\n");
 }
 
 int print_usage (int exit_status)
 {
-  print_version ();
+  printf ("%s stores a single file inside of a PNG image\n\n", progname);
 
-  printf ("Usage: %s [options] [file]\n\n", progname);
+  printf ("Usage: %s [OPTION ...] [FILE ...]\n\n", progname);
   printf ("Options:\n\n");
-  printf ("  -c, --create       Create PNG Archive\n");
-  printf ("  -x, --extract      Extract PNG Archive\n");
-  printf ("  -v, --verbose      Enable verbose output\n");
-  printf ("  -b, --brief        Enable verbose output\n");
-  printf ("  -V, --version      Display version information\n");
-  printf ("  -o, --output       Set the output file name\n");
-  printf ("  -!, --help         Display this help text\n");
+  printf ("  -c, --create            Create PNG Archive\n");
+  printf ("  -x, --extract           Extract PNG Archive\n");
+  printf ("  -v, --verbose           Enable verbose output\n");
+  printf ("  -b, --brief             Enable verbose output\n");
+  printf
+    ("  -o, --output            Set the output file name (invokes -i)\n");
+  printf ("  -X, --x-position        Distance of data from image left\n");
+  printf ("  -Y, --y-position        Distance of data from image top\n");
+  printf ("  -V, --version           Display version information\n");
+  printf ("  -!, --help              Display this help text\n");
 
   /* Archive options. */
   printf ("\nArchiving Options:\n\n");
-  printf ("  -n, --no-checksum  Do not add checksum to data\n");
-  printf ("  -W, --data-width   Width of data in the image (default %d)\n",
-	  data_width);
-  printf ("  -H, --data-height  Height of data in the image (default %d)\n",
-	  data_height);
-  printf ("  -X, --x-position   Data distance from the left of the image"
-	  " (default %d)\n", x_pos);
-  printf ("  -Y, --y-position   Data distance from the top of the image"
-	  " (default %d)\n", y_pos);
-  printf ("  -w, --img-width    Width of the image (default %d)\n",
-	  img_width);
-  printf ("  -h, --img-height   Height of the image (default %d)\n",
-	  img_height);
-  printf ("  -d, --bit-depth    PNG bit depth (default %d)\n", bit_depth);
-  printf ("  -i, --insert       Insert data into exiting images\n");
+  printf ("  -n, --no-checksum       Do not add checksum to data\n");
+  printf ("  -W, --data-width        Width of data in the image\n");
+  printf ("  -H, --data-height       Height of data in the image\n");
+  printf ("  -w, --img-width         Width of the image\n");
+  printf ("  -h, --img-height        Height of the image\n");
+  printf ("  -d, --bit-depth         PNG bit depth (default %d)\n",
+	  bit_depth);
+  printf ("  -i, --insert            Insert data into exiting images\n");
 
   /* Extraction options. */
   printf ("\nExtraction Options:\n\n");
-  printf ("  -t, --list         List internal filename\n");
-  printf ("  --auto-detect      Attempt to find image data "
+  printf ("  -t, --list              List internal filename\n");
+  printf ("  --auto-detect           Attempt to find image data "
 	  "automatically. (default)\n");
-  printf ("  --no-auto-detect   Do not attempt to find image data "
+  printf ("  --no-auto-detect        Do not attempt to find image data "
 	  "automatically.\n");
-  printf ("  -n, --no-checksum  Ignore bad checksums\n");
+  printf ("  -n, --no-checksum       Ignore bad checksums\n");
+
+  /* Examples */
+  printf ("\n");
+  printf ("Examples:\n\n");
+  printf ("This example creates a PNG image named `some_file.txt.png'\n\n");
+  printf ("  %s some_file.txt\n", progname);
+  printf ("\nAnd this example inserts the file `file.o' at location (10, 15) "
+	  "and data width 50 in the existing\nimage `my_img.png'\n\n");
+  printf ("  %s -X 10 -Y 15 -w 50 -o my_img.png file.o\n", progname);
 
   exit (exit_status);
 }
@@ -151,6 +156,7 @@ int main (int argc, char **argv)
 
 	case 'V':		/* version */
 	  print_version ();
+	  exit (EXIT_SUCCESS);
 	  break;
 
 	case 'v':		/* verbose */
