@@ -22,10 +22,10 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 
   int x_pos = dat_info->x_pos;
   int y_pos = dat_info->y_pos;
-  int img_width = dat_info->png_width;
-  int img_height = dat_info->png_height;
   int data_width = dat_info->data_width;
   int data_height = dat_info->data_height;  
+  int img_width = dat_info->png_width;
+  int img_height = dat_info->png_height;
   
   /* No constraints defined. */
   if (img_width == 0 && img_height == 0 &&
@@ -64,6 +64,37 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
 				/ (data_width * 3.0));
       img_height = data_height + y_pos;
     }
+    
+  png_bytep *row_pointers;
+
+  /* Set up the image data. */
+  png_infop infoin_ptr;
+  png_structp pngin_ptr; 
+  if (dat_info->insert)
+    {
+      pngin_ptr = png_create_read_struct
+	(PNG_LIBPNG_VER_STRING, NULL, NULL, NULL);
+      infoin_ptr = png_create_info_struct(pngin_ptr);
+      png_init_io(pngin_ptr, outfile);
+      png_read_png(pngin_ptr, infoin_ptr, PNG_TRANSFORM_STRIP_ALPHA, NULL);
+
+      row_pointers = png_get_rows(pngin_ptr, infoin_ptr);
+
+      rewind(outfile);
+      
+      /* Check dimensions. */
+      img_width = infoin_ptr->width;
+      img_height = infoin_ptr->height;
+      if (data_width + x_pos > img_width)
+	data_width = img_width - x_pos;
+      if (data_height + y_pos > img_height)
+	data_height = img_height - y_pos;
+    }
+  else
+    {
+      row_pointers = (png_bytep *)
+	malloc(sizeof(png_bytep) * img_height);
+    }
   
   int rowbytes = img_width * 3 * byte_depth;
   int datbytes = data_width * 3 * byte_depth - csum;
@@ -73,11 +104,6 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
       data_size = datbytes * data_height - header_size;
       exit_stat = PNGDAT_TRUNCATED;
     }
-  
-  /* Image data */
-  png_bytep *row_pointers; 
-  row_pointers = (png_bytep *)
-    malloc(sizeof(png_bytep) * img_height);
   
   /* Initialize png structs. */
   png_structp png_ptr = png_create_write_struct
@@ -109,7 +135,8 @@ int datpng_write(FILE *outfile, datpng_info *dat_info,
   int i;
   for (i = 0; i < img_height; i++)
     {
-      row_pointers[i] = (png_bytep) calloc(1, rowbytes);
+      if (!dat_info->insert)
+	row_pointers[i] = (png_bytep) calloc(1, rowbytes);
       
       /* Write the header. */
       if (i == y_pos)

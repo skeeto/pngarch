@@ -26,6 +26,7 @@ static int verbose_flag = 0;
 static int brief_flag = 0;
 static int list_flag = 0;
 static int square_flag = 1;
+static int insert_flag = 0;
 static int checksum = 1;
 char *progname;
 
@@ -72,6 +73,7 @@ int print_usage(int exit_status)
   printf("  -h, --img-height   Height of the image (default %d)\n", 
 	 img_height);
   printf("  -d, --bit-depth    PNG bit depth (default %d)\n", bit_depth);
+  printf("  -i, --insert       Insert data into exiting images\n");
 
   /* Extraction options. */
   printf("\nExtraction Options:\n\n");
@@ -118,6 +120,7 @@ int main(int argc, char **argv)
 	  {"x-position",  required_argument, 0, 'X'},
 	  {"y-position",  required_argument, 0, 'Y'},
 	  {"bit-depth",   required_argument, 0, 'd'},
+	  {"insert",      no_argument,       0, 'i'},
 
 	  /* Auto-detect options. */
 	  {"--no-auto-detect", no_argument, &auto_detect, 0},
@@ -128,7 +131,7 @@ int main(int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
       
-      c = getopt_long (argc, argv, "vbVxcw:h:tno:!X:Y:H:W:",
+      c = getopt_long (argc, argv, "vbVxcw:h:tno:!iX:Y:H:W:",
 		       long_options, &option_index);
       
       /* Detect the end of the options. */
@@ -155,6 +158,11 @@ int main(int argc, char **argv)
 	       
              case 'o':
 	       outfile = optarg;
+	       insert_flag = 1;
+               break;
+	            
+             case 'i':
+	       insert_flag = 1;
                break;
 	            
              case 'x':
@@ -331,7 +339,7 @@ int decode_dat(char *filename, char *outfile)
 	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s\n", 
 		  progname, filename, strerror(errno));
-	 return 1;
+	  return 1;
 	}
     }
   
@@ -410,6 +418,17 @@ int encode_dat(char *infile, char *outfile)
   if (verbose_flag)
     fprintf(stderr, "Encoding %s\n", infile);
   
+  int file_exist = 0;
+  if (insert_flag)
+    {
+      FILE *fc = fopen(infile, "rb");
+      if (fc != NULL)
+	{
+	  file_exist = 1;
+	  fclose(fc);
+	}
+    }
+  
   /* Prepare input buffer */
   size_t read_size = 1024; /* Reading in 1 kbyte at a time. */
   size_t buffer_max = 1024 * 64; /* Initial buffer at 64 kbytes. */
@@ -486,13 +505,17 @@ int encode_dat(char *infile, char *outfile)
   data_info.png_width = img_width;
   data_info.png_height = img_height;
   data_info.no_warnings = brief_flag;
+  data_info.insert = file_exist;
   
   FILE *fp;
   if (strcmp(outfile, "-") == 0)
     fp = stdout;
   else
     {
-      fp = fopen(outfile, "wb");
+      char *o_mode = "wb";
+      if (file_exist)
+	o_mode = "r+b";
+      fp = fopen(outfile, o_mode);
       if (fp == NULL)
     	{
 	  fprintf(stderr, "%s: Failed to open file %s - %s", 

@@ -17,6 +17,7 @@ typedef struct datpng_info
   int png_width;		/* Image width. */
   int png_height;		/* Image height. */
   int no_warnings;		/* Suppress all warnings. */
+  int insert;			/* Insert data into exiting file. (write) */
 } datpng_info;
 
 extern int header_size;
@@ -31,7 +32,7 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
 int datpng_autoread (FILE * infile, datpng_info * dat_info,
 		     void **data, size_t * data_size);
 
-/* Error codes - Code < 0 are warnings. Codes > 0 are errors. */
+/* Error codes - Codes < 0 are warnings. Codes > 0 are errors. */
 #define PNGDAT_SUCCESS 0
 
 #define PNGDAT_MISSING_CONSTRAINT 1
