@@ -432,7 +432,7 @@ int encode_dat (char *infile, char *outfile)
   int file_exist = 0;
   if (insert_flag)
     {
-      FILE *fc = fopen (infile, "rb");
+      FILE *fc = fopen (outfile, "rb");
       if (fc != NULL)
 	{
 	  file_exist = 1;
@@ -529,8 +529,8 @@ int encode_dat (char *infile, char *outfile)
       fp = fopen (outfile, o_mode);
       if (fp == NULL)
 	{
-	  fprintf (stderr, "%s: Failed to open file %s - %s",
-		   progname, infile, strerror (errno));
+	  fprintf (stderr, "%s: Failed to open file %s - %s\n",
+		   progname, outfile, strerror (errno));
 	  return 1;
 	}
     }
