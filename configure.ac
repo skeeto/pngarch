@@ -2,7 +2,7 @@
 # Process this file with autoconf to produce a configure script.
 
 AC_PREREQ(2.61)
-AC_INIT(pngarch, 0.1, none)
+AC_INIT(pngarch, 0.2beta, none)
 AM_INIT_AUTOMAKE([-Wall gnu])
 AC_CONFIG_SRCDIR([pngarch.c])
 AC_CONFIG_HEADER([config.h])
