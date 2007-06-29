@@ -12,12 +12,43 @@
 int header_size = 10;
 short cur_ver = 0;
 
+png_colorp gen_palette ();
+
 int datpng_write (FILE * outfile, datpng_info * dat_info,
 		  void *data, size_t data_size)
 {
+  png_colorp palette = NULL;
+  int num_palette;
+
   int exit_stat = EXIT_SUCCESS;
 
-  int byte_depth = 1;
+  /* Check the bit depth. */
+  if (dat_info->bit_depth != 8)
+    return PNGDAT_INVALID_BIT_DEPTH;
+
+  int pixel_width, color_type;
+  switch (dat_info->color_type)
+    {
+    case PNGDAT_CT_AUTO:
+      pixel_width = 3;
+      color_type = PNG_COLOR_TYPE_RGB;
+      break;
+
+    case PNGDAT_CT_RGB:
+      pixel_width = 3;
+      color_type = PNG_COLOR_TYPE_RGB;
+      break;
+
+    case PNGDAT_CT_PALETTE:
+      pixel_width = 1;
+      color_type = PNG_COLOR_TYPE_PALETTE;
+      break;
+
+    default:
+      return PNGDAT_INVALID_COLOR_TYPE;
+      break;
+    }
+
   int csum = dat_info->checksum;
 
   int x_pos = dat_info->x_pos;
@@ -48,20 +79,20 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
     {
       /* Calculate a width. */
       data_width = (int) ceil ((data_size + header_size)
-			       / (data_height * 3.0));
+			       / (data_height * pixel_width * 1.0));
       if (csum)
 	data_width = (int) ceil ((data_size + header_size + data_height)
-				 / (data_height * 3.0));
+				 / (data_height * pixel_width * 1.0));
       img_width = data_width + x_pos;
     }
   if (img_height == 0 && data_height == 0)
     {
       /* Calculate a height. */
       data_height = (int) ceil ((data_size + header_size)
-				/ (data_width * 3.0));
+				/ (data_width * pixel_width * 1.0));
       if (csum)
 	data_height = (int) ceil ((data_size + header_size + data_height)
-				  / (data_width * 3.0));
+				  / (data_width * pixel_width * 1.0));
       img_height = data_height + y_pos;
     }
 
@@ -89,14 +120,45 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
 	data_width = img_width - x_pos;
       if (data_height + y_pos > img_height)
 	data_height = img_height - y_pos;
+
+      /* Check color type. */
+      switch (infoin_ptr->color_type)
+	{
+	case PNG_COLOR_TYPE_PALETTE:
+	  pixel_width = 1;
+	  color_type = PNG_COLOR_TYPE_PALETTE;
+	  break;
+
+	case PNG_COLOR_TYPE_RGB:
+	  pixel_width = 3;
+	  color_type = PNG_COLOR_TYPE_RGB;
+	  break;
+
+	case PNG_COLOR_TYPE_RGB_ALPHA:
+	  pixel_width = 3;
+	  color_type = PNG_COLOR_TYPE_RGB;
+	  break;
+
+	default:
+	  /* XXX free resources */
+	  return PNGDAT_INVALID_COLOR_TYPE;
+	  break;
+	}
+
+      /* Check the bit depth. */
+      if (infoin_ptr->bit_depth != 8)
+	{
+	  /* XXX free resources */
+	  return PNGDAT_INVALID_BIT_DEPTH;
+	}
     }
   else
     {
       row_pointers = (png_bytep *) malloc (sizeof (png_bytep) * img_height);
     }
 
-  int rowbytes = img_width * 3 * byte_depth;
-  int datbytes = data_width * 3 * byte_depth - csum;
+  int rowbytes = img_width * pixel_width;
+  int datbytes = data_width * pixel_width - csum;
 
   if (datbytes * data_height < data_size)
     {
@@ -139,7 +201,8 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
       /* Write the header. */
       if (i == y_pos)
 	{
-	  memcpy (row_pointers[y_pos] + (x_pos * 3), &header, header_size);
+	  memcpy (row_pointers[y_pos] +
+		  (x_pos * pixel_width), &header, header_size);
 	  offset = header_size;
 	}
       else
@@ -151,6 +214,7 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
       if (data_len > data_size)
 	data_len = data_size - (data_len - datbytes);
       else
+
 	data_len = datbytes - offset;
 
       if (data_len < 0)
@@ -160,7 +224,7 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
       write_out = 0;
       if (i >= y_pos && data_len > 0)
 	{
-	  memcpy (row_pointers[i] + offset + (x_pos * 3),
+	  memcpy (row_pointers[i] + offset + (x_pos * pixel_width),
 		  next_data, data_len);
 	  next_data += data_len;
 	  write_out = 1;
@@ -171,11 +235,21 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
 	{
 	  int j;
 	  uint8_t sum = 0;
-	  for (j = (x_pos * 3); j < datbytes + (x_pos * 3); j++)
+	  for (j = (x_pos * pixel_width);
+	       j < datbytes + (x_pos * pixel_width); j++)
 	    sum += row_pointers[i][j];
 
-	  row_pointers[i][(x_pos * 3) + datbytes] = sum;
+	  row_pointers[i][(x_pos * pixel_width) + datbytes] = sum;
 	}
+    }
+
+  /* Determine a palette. */
+  if (color_type == PNG_COLOR_TYPE_PALETTE)
+    {
+      palette = gen_palette ();
+      info_ptr->palette = palette;
+      info_ptr->num_palette = num_palette;
+      png_set_PLTE (png_ptr, info_ptr, palette, num_palette);
     }
 
   /* Set image meta data. */
@@ -183,11 +257,9 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
   info_ptr->height = img_height;
   info_ptr->valid = 0;
   info_ptr->rowbytes = rowbytes;
-  info_ptr->palette = NULL;
-  info_ptr->num_palette = 0;
   info_ptr->num_trans = 0;
   info_ptr->bit_depth = dat_info->bit_depth;
-  info_ptr->color_type = PNG_COLOR_TYPE_RGB;
+  info_ptr->color_type = color_type;
   info_ptr->compression_type = PNG_COMPRESSION_TYPE_DEFAULT;
   info_ptr->filter_type = PNG_FILTER_TYPE_DEFAULT;
   info_ptr->interlace_type = PNG_INTERLACE_NONE;
@@ -201,4 +273,41 @@ int datpng_write (FILE * outfile, datpng_info * dat_info,
   png_write_end (png_ptr, NULL);
 
   return exit_stat;
+}
+
+/* Generates a 256 color palette */
+png_colorp gen_palette ()
+{
+  png_colorp palette = (png_colorp) malloc (256 * sizeof (png_color));
+
+  int i;
+
+  /* red */
+  for (i = 0; i < 64; i++)
+    palette[i].red = i * 4;
+  for (i = 64; i < 192; i++)
+    palette[i].red = 255;
+  for (i = 192; i < 256; i++)
+    palette[i].red = (255 - i) * 4;
+
+  /* green */
+  for (i = 0; i < 64; i++)
+    palette[i].green = (64 - i) * 4;
+  for (i = 64; i < 128; i++)
+    palette[i].green = (i - 64) * 4;
+  for (i = 128; i < 256; i++)
+    palette[i].green = 255;
+
+  /* blue */
+  for (i = 0; i < 64; i++)
+    palette[i].blue = 255;
+  for (i = 64; i < 128; i++)
+    palette[i].blue = (128 - i) * 4;
+  for (i = 128; i < 192; i++)
+    palette[i].blue = (i - 128) * 4;
+  for (i = 192; i < 256; i++)
+    palette[i].blue = 255;
+
+  /* palette = calloc(1,256 * sizeof(png_color)); */
+  return palette;
 }

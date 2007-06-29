@@ -21,6 +21,7 @@ static int img_height = 0;
 static int x_pos = 0;
 static int y_pos = 0;
 static int bit_depth = 8;
+static int color_type = PNGDAT_CT_RGB;
 
 /* Option flags */
 static int verbose_flag = 0;
@@ -70,13 +71,13 @@ int print_usage (int exit_status)
   printf ("  -H, --data-height       Height of data in the image\n");
   printf ("  -w, --img-width         Width of the image\n");
   printf ("  -h, --img-height        Height of the image\n");
-  printf ("  -d, --bit-depth         PNG bit depth (default %d)\n",
-	  bit_depth);
+  printf ("  -d, --bit-depth         PNG bit depth (8)\n");
+  printf ("  -t, --color-type        PNG color type (rgb, palette)\n");
   printf ("  -i, --insert            Insert data into exiting images\n");
 
   /* Extraction options. */
   printf ("\nExtraction Options:\n\n");
-  printf ("  -t, --list              List internal filename\n");
+  printf ("  -l, --list              List internal filename\n");
   printf ("  --auto-detect           Attempt to find image data "
 	  "automatically. (default)\n");
   printf ("  --no-auto-detect        Do not attempt to find image data "
@@ -122,11 +123,12 @@ int main (int argc, char **argv)
 	{"data-height", required_argument, 0, 'H'},
 	{"img-width",   required_argument, 0, 'w'},
 	{"img-height",  required_argument, 0, 'h'},
-	{"list",        no_argument,       0, 't'},
+	{"list",        no_argument,       0, 'l'},
 	{"no-checksum", no_argument,       0, 'n'},
 	{"x-position",  required_argument, 0, 'X'},
 	{"y-position",  required_argument, 0, 'Y'},
 	{"bit-depth",   required_argument, 0, 'd'},
+	{"color-type",  required_argument, 0, 't'},
 	{"insert",      no_argument,       0, 'i'},
 
 	/* Auto-detect options. */
@@ -139,7 +141,7 @@ int main (int argc, char **argv)
       /* getopt_long stores the option index here. */
       int option_index = 0;
 
-      c = getopt_long (argc, argv, "vbVxcw:h:tno:!iX:Y:H:W:",
+      c = getopt_long (argc, argv, "vbVxcw:h:t:nd:lo:!iX:Y:H:W:",
 		       long_options, &option_index);
 
       /* Detect the end of the options. */
@@ -236,7 +238,7 @@ int main (int argc, char **argv)
 	  square_flag = 0;
 	  break;
 
-	case 't':		/* list filename */
+	case 'l':		/* list filename */
 	  list_flag = 1;
 	  break;
 
@@ -246,6 +248,22 @@ int main (int argc, char **argv)
 
 	case 'd':		/* image bit depth */
 	  bit_depth = atoi (optarg);
+	  break;
+
+	case 't':		/* color type */
+	  if (strcmp (optarg, "rgb") == 0)
+	    {
+	      color_type = PNGDAT_CT_RGB;
+	    }
+	  else if (strcmp (optarg, "palette") == 0)
+	    {
+	      color_type = PNGDAT_CT_PALETTE;
+	    }
+	  else
+	    {
+	      fprintf (stderr, "%s: invalid color type.\n", progname);
+	      print_usage (EXIT_FAILURE);
+	    }
 	  break;
 
 	case '?':		/* error */
@@ -315,6 +333,7 @@ int decode_dat (char *filename, char *outfile)
   /* Set the necessary meta data. */
   datpng_info data_info;
   data_info.bit_depth = bit_depth;
+  data_info.color_type = PNGDAT_CT_AUTO;
   data_info.checksum = 0;
   if (!auto_detect)
     {
@@ -502,11 +521,15 @@ int encode_dat (char *infile, char *outfile)
     fclose (fin);
 
   /* Make image square. */
+  int pixel_width = 3;
+  if (color_type == PNGDAT_CT_PALETTE)
+    pixel_width = 3;
   if (square_flag)
-    data_width = ceil (sqrt (buffer_size / 3.0));
+    data_width = ceil (sqrt (buffer_size / pixel_width * 1.0));
 
   /* Setup meta data. */
   datpng_info data_info;
+  data_info.color_type = color_type;
   data_info.bit_depth = bit_depth;
   data_info.checksum = checksum;
   data_info.x_pos = x_pos;

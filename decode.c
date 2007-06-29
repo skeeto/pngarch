@@ -9,6 +9,8 @@
 int datpng_read (FILE * infile, datpng_info * dat_info,
 		 void **data, size_t * data_size)
 {
+  int pixel_width = 3;
+
   int x_pos = dat_info->x_pos;
   int y_pos = dat_info->y_pos;
 
@@ -25,7 +27,7 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
 
   /* Grab the header. */
   uint8_t header[10];
-  memcpy (header, row_pointers[y_pos] + (x_pos * 3), header_size);
+  memcpy (header, row_pointers[y_pos] + (x_pos * pixel_width), header_size);
 
   /* Extract version information. */
   /*int bit_depth = (int)(header[1] & 0x0F); */
@@ -42,7 +44,8 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
 
   /* Get data length (from network order bytes) */
   *data_size = (size_t) ntohl (*((uint32_t *) (header + 2)));
-  if (*data_size == 0 || *data_size > png_ptr->width * png_ptr->height * 3)
+  if (*data_size == 0 ||
+      *data_size > png_ptr->width * png_ptr->height * pixel_width)
     {
       png_destroy_read_struct (&png_ptr, &info_ptr, NULL);
       return PNGDAT_CORRUPT_DATA;
@@ -58,7 +61,7 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
 
   *data = calloc (1, *data_size);
 
-  int datbytes = width * 3 - csum;
+  int datbytes = width * pixel_width - csum;
 
   int amt = 0, i = 0;
   int offset, data_len;
@@ -77,8 +80,8 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
       read_in = 0;
       if (i >= y_pos)
 	{
-	  memcpy (*data + amt, row_pointers[i] + offset + (x_pos * 3),
-		  data_len);
+	  memcpy (*data + amt,
+		  row_pointers[i] + offset + (x_pos * pixel_width), data_len);
 	  amt += data_len;
 	  read_in = 1;
 	}
@@ -88,10 +91,11 @@ int datpng_read (FILE * infile, datpng_info * dat_info,
 	{
 	  int j;
 	  uint8_t sum = 0;
-	  for (j = (x_pos * 3); j < datbytes + (x_pos * 3); j++)
+	  for (j = (x_pos * pixel_width);
+	       j < datbytes + (x_pos * pixel_width); j++)
 	    sum += row_pointers[i][j];
 
-	  if (row_pointers[i][datbytes + (x_pos * 3)] != sum)
+	  if (row_pointers[i][datbytes + (x_pos * pixel_width)] != sum)
 	    {
 	      if (!dat_info->no_warnings)
 		fprintf (stderr, "Warning: checksum failed!\n");

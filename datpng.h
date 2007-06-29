@@ -8,6 +8,7 @@
 /* Describes how data should be structured in the PNG. */
 typedef struct datpng_info
 {
+  int color_type;		/* Color type. */
   int bit_depth;		/* Image bit depth. */
   int checksum;			/* Include/check data checksum. */
   int x_pos;			/* Pixel x position of the data. */
@@ -19,6 +20,11 @@ typedef struct datpng_info
   int no_warnings;		/* Suppress all warnings. */
   int insert;			/* Insert data into exiting file. (write) */
 } datpng_info;
+
+/* Color types */
+#define PNGDAT_CT_AUTO    0
+#define PNGDAT_CT_RGB     1
+#define PNGDAT_CT_PALETTE 2
 
 extern int header_size;
 extern short cur_ver;
@@ -33,15 +39,17 @@ int datpng_autoread (FILE * infile, datpng_info * dat_info,
 		     void **data, size_t * data_size);
 
 /* Error codes - Codes < 0 are warnings. Codes > 0 are errors. */
-#define PNGDAT_SUCCESS 0
+#define PNGDAT_SUCCESS             0
 
-#define PNGDAT_MISSING_CONSTRAINT 1
-#define PNGDAT_FAILED_AUTOFIND 2
-#define PNGDAT_CORRUPT_DATA 3
-#define PNGDAT_CORRUPT_PNG 4
-#define PNGDAT_FAILED_CHECKSUM 5
-#define PNGDAT_BAD_VERSION 6
+#define PNGDAT_MISSING_CONSTRAINT  1
+#define PNGDAT_FAILED_AUTOFIND     2
+#define PNGDAT_CORRUPT_DATA        3
+#define PNGDAT_CORRUPT_PNG         4
+#define PNGDAT_FAILED_CHECKSUM     5
+#define PNGDAT_BAD_VERSION         6
+#define PNGDAT_INVALID_COLOR_TYPE  7
+#define PNGDAT_INVALID_BIT_DEPTH   8
 
-#define PNGDAT_TRUNCATED -1
+#define PNGDAT_TRUNCATED          -1
 
 #endif
