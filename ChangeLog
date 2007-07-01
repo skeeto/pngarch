@@ -1,0 +1,276 @@
+2007-06-24 02:31  wellons
+
+	* doc/datpng.texi: Working texinfo file now.
+
+2007-06-24 02:28  wellons
+
+	* doc/Makefile.am, doc/README, doc/datpng.texi, doc/pngarch.1,
+	  doc/pngarch.texi: Moved texinfo file to cover library and the
+	  tool.
+
+2007-06-24 02:24  wellons
+
+	* doc/pngarch.texi: Starting to rename the texinfo document.
+
+2007-06-24 02:19  wellons
+
+	* Makefile.am, configure.ac, doc, doc/Makefile.am, doc/README,
+	  doc/pngarch.1, doc/pngarch.texi, doc/pngarch_extra.txt,
+	  pngarch.c: Got documentation started.
+
+2007-06-24 01:47  wellons
+
+	* pngarch.c: Adjusted help output to work better with help2man.
+
+2007-06-24 00:58  wellons
+
+	* pngarch.c: Added some commenting.
+
+2007-06-24 00:45  wellons
+
+	* decode.c, encode.c, pngarch.c: Ran indent on all code.
+
+2007-06-24 00:41  wellons
+
+	* datpng.h, encode.c, pngarch.c: Can now insert data into an
+	  existing picture.
+
+2007-06-23 20:24  wellons
+
+	* datpng.h, decode.c, pngarch.c: Added some documentation to
+	  datpng.
+
+2007-06-23 20:08  wellons
+
+	* pngarch.c: Images are automatically made square.
+
+2007-06-23 19:48  wellons
+
+	* pngarch.c: Added output file option.
+
+2007-06-23 19:17  wellons
+
+	* pngarch.c: List filename now works.
+
+2007-06-23 19:02  wellons
+
+	* encode.c: Fixed error determining image size.
+
+2007-06-23 18:48  wellons
+
+	* datpng.h, decode.c, pngarch.c: Working auto-find feature in
+	  datpng.
+
+2007-06-22 00:51  wellons
+
+	* encode.c, pngarch.c: Proper detection of truncated data.
+
+2007-06-22 00:37  wellons
+
+	* encode.c: Height now properly calculated.
+
+2007-06-21 02:49  wellons
+
+	* decode.c, encode.c, pngarch.c: The x and y position settings now
+	  work together.
+
+2007-06-21 02:42  wellons
+
+	* decode.c, encode.c, pngarch.c: Got y position working.
+
+2007-06-21 02:18  wellons
+
+	* datpng.h, decode.c, encode.c, pngarch.c: Width, height, and x
+	  position all working now.
+
+2007-06-20 21:00  wellons
+
+	* pngarch.c: Added print version.
+
+2007-06-20 16:17  wellons
+
+	* pngarch.c: Adjusted options for pngarch.
+
+2007-06-20 02:37  wellons
+
+	* configure.ac: Updated configure file to reflect new library.
+
+2007-06-20 02:31  wellons
+
+	* Makefile.am, datpng.c, pngarch.c: Changed filename for main
+	  program to make more sense.
+
+2007-06-20 02:26  wellons
+
+	* datpng.c, datpng.h, decode.c, encode.c: Added checksum feature to
+	  check for data integrity.
+
+2007-06-20 00:54  wellons
+
+	* README: Invented up datpng header information.
+
+2007-06-18 23:27  wellons
+
+	* www/index.html: Added HTML validator image.
+
+2007-06-18 23:25  wellons
+
+	* www/index.html: Fixed more HTML errors.
+
+2007-06-18 23:23  wellons
+
+	* www/index.html: Fixed HTML error.
+
+2007-06-18 22:37  wellons
+
+	* www/index.html: Added copyright notice.
+
+2007-06-18 22:35  wellons
+
+	* www/index.html: Added note about Apache issue.
+
+2007-06-18 22:29  wellons
+
+	* www/files/pngarch-0.1.tar.gz.png,
+	  www/files/pngarch-0.1.tar.gz.png.md5,
+	  www/files/pngarch-0.1.tar_gz.png,
+	  www/files/pngarch-0.1.tar_gz.png.md5, www/index.html,
+	  www/right-to-read-gz.png, www/right-to-read.txt.gz.png,
+	  www/right-to-read.txt_gz.png: Fixed file name as to not confuse
+	  the server.
+
+2007-06-18 22:09  wellons
+
+	* www/files/pngarch-0.1.tar.gz, www/files/pngarch-0.1.tar.gz.png:
+	  Added source for 0.1 release.
+
+2007-06-18 22:08  wellons
+
+	* www/files, www/files/pngarch-0.1.tar.gz.md5,
+	  www/files/pngarch-0.1.tar.gz.png.md5, www/right-to-read.txt,
+	  www/right-to-read.txt.gz.png, www/right-to-read.txt.png: Adding
+	  files to website.
+
+2007-06-18 22:07  wellons
+
+	* www/index.html: Added a lot more information to the web page.
+
+2007-06-18 21:55  wellons
+
+	* configure.ac: Fixed project name.
+
+2007-06-18 20:37  wellons
+
+	* Makefile.am: Renamed main binary to pngarch.
+
+2007-06-18 20:36  wellons
+
+	* www/index.html: More webpage work complete.
+
+2007-06-18 20:19  wellons
+
+	* www/index.html: Finished writing up download section.
+
+2007-06-18 20:11  wellons
+
+	* sample_small.png, www, www/index.html: Created web page and wrote
+	  up the summary.
+
+2007-06-18 19:32  wellons
+
+	* datpng.c: Added comment for auto_dat() function.
+
+2007-06-18 19:31  wellons
+
+	* configure.ac: Updated build system to reflect changes.
+
+2007-06-18 19:19  wellons
+
+	* datpng.c: Working interface that now works very much like gzip.
+
+2007-06-18 18:53  wellons
+
+	* datpng.c: Working interface, but want to make it more gzip-like.
+
+2007-06-18 18:50  wellons
+
+	* encode.c: Fixed encoder bug where the wrong length of data was
+	  being copued.
+
+2007-06-18 15:48  wellons
+
+	* datpng.c: Interface fleshed out.
+
+2007-06-18 02:41  wellons
+
+	* datpng.c: Added option parsing structure.
+
+2007-06-18 00:14  wellons
+
+	* datpng.c: Pulled out image width variable for testing.
+
+2007-06-17 02:45  wellons
+
+	* configure.ac: Removed old test file pointer.
+
+2007-06-17 02:43  wellons
+
+	* datpng.c: Forgot to add this file earlier.
+
+2007-06-17 02:39  wellons
+
+	* datpng.h, decode.c, encode.c: Adjusted library interface. Pass
+	  FILE* instead of filename.
+
+2007-06-17 02:32  wellons
+
+	* Makefile.am, datpng.h, decode.c, encode.c: Working encoder and
+	  decoder
+
+2007-06-16 21:54  wellons
+
+	* Makefile.am, datpng.h, encode.c: Working "library" call for
+	  encoding datpng.
+
+2007-06-16 19:09  wellons
+
+	* Makefile.am: Fixed automake file to new file names.
+
+2007-06-15 18:04  wellons
+
+	* datpng.h, encode.c, test.c: Added header file for main datpng
+	  interface.
+
+2007-06-15 18:03  wellons
+
+	* test.c: Began adding header file.
+
+2007-06-15 03:17  wellons
+
+	* test.c: Added special check for empty row.
+
+2007-06-15 02:10  wellons
+
+	* test.c: Basic working encoder.
+
+2007-06-15 01:33  wellons
+
+	* test.c: Working PNG writing function.
+
+2007-06-14 20:45  wellons
+
+	* test.c: Still working in writing a PNG.
+
+2007-06-14 19:46  wellons
+
+	* AUTHORS, ChangeLog, NEWS, README: Making automake happy.
+
+2007-06-14 19:45  wellons
+
+	* Makefile.am, configure.ac, sample_small.png, test.c: Initial
+	  import.
+
+2007-06-14 19:44  wellons
+
+	* branches, tags, .: Initial directory structure.
+
