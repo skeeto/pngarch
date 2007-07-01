@@ -56,7 +56,7 @@ int print_usage (int exit_status)
   printf ("  -c, --create            Create PNG Archive\n");
   printf ("  -x, --extract           Extract PNG Archive\n");
   printf ("  -v, --verbose           Enable verbose output\n");
-  printf ("  -b, --brief             Enable verbose output\n");
+  printf ("  -b, --brief             Disable warnings\n");
   printf
     ("  -o, --output            Set the output file name (invokes -i)\n");
   printf ("  -X, --x-position        Distance of data from image left\n");
@@ -78,11 +78,11 @@ int print_usage (int exit_status)
   /* Extraction options. */
   printf ("\nExtraction Options:\n\n");
   printf ("  -l, --list              List internal filename\n");
+  printf ("  -n, --no-checksum       Ignore bad checksums\n");
   printf ("  --auto-detect           Attempt to find image data "
 	  "automatically. (default)\n");
   printf ("  --no-auto-detect        Do not attempt to find image data "
 	  "automatically.\n");
-  printf ("  -n, --no-checksum       Ignore bad checksums\n");
 
   /* Examples */
   printf ("\n");
@@ -90,7 +90,7 @@ int print_usage (int exit_status)
   printf ("This example creates a PNG image named `some_file.txt.png'\n\n");
   printf ("  %s some_file.txt\n", progname);
   printf ("\nAnd this example inserts the file `file.o' at location (10, 15) "
-	  "and data width 50 in the existing\nimage `my_img.png'\n\n");
+	  "and data width \n50 in the existing image `my_img.png'\n\n");
   printf ("  %s -X 10 -Y 15 -w 50 -o my_img.png file.o\n", progname);
 
   exit (exit_status);
