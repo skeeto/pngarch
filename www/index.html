@@ -9,6 +9,14 @@
 <body>
 <!-- *************************************************************** -->
 <h1>PNG Archiver</h1>
+<ul>
+<li><a href="#intro">Introduction</a></li>
+<li><a href="#summary">Summary</a></li>
+<li><a href="#download">Download</a></li>
+</ul>
+<!-- *************************************************************** -->
+<a name="intro" id="intro" />
+<h2>Introduction</h2>
 <p>
 <strong>PNG Archiver</strong> is a library (<code>pngdat</code>) and
 command line tool (<code>pngarch</code>) for storing data inside a <a
@@ -27,7 +35,8 @@ scanner) in order to make sharing of data easier.
 Images are the easiest file format to share on the Internet, and
 anywhere where you can share a file, you can always share an
 image. With the PNG Archiver, you can store any data you want in the
-image.
+image. A built-in checksum checks the data integrity when extracting
+the data from an image.
 </p>
 <p>
 For example, here is Richard Stallman's <a
@@ -42,7 +51,7 @@ The original text file can be found here:
 <p>
 The built-in PNG compression doesn't do much for this non-image
 data. This is why you should compress data before archiving it in a
-PNG.
+PNG. This will also make the image dimensions smaller.
 </p>
 <p>
 A decent amount of data can be stored in an image. 1.4MB can be stored
@@ -61,6 +70,10 @@ PNG Archiver does not duplicate the functionality of other tools that
 already do an excellent job of archiving.
 </p>
 <p>
+<strong>The PNG Archiver is not a steganography tool.</strong> When
+you put data into an image, it will usually be very obvious.
+</p>
+<p>
 The word/acronym "PNG" is pronounced "ping". This means that this tool
 is called the "ping archiver". Really, you can call it whatever you
 want. This is just some advice to help you avoid confusion later on.
@@ -68,7 +81,10 @@ want. This is just some advice to help you avoid confusion later on.
 <p>
 The tool and library are both licensed under the <a
 href="http://www.gnu.org"> GNU</a> <a
-href="http://www.gnu.org/copyleft/gpl.html"> GPL</a>.
+href="http://www.gnu.org/copyleft/gpl.html"> GPLv3</a>.
+</p>
+<p>
+<img src="gplv3-127x51.png" alt="GPLv3 Logo" />
 </p>
 <p>
 Comments, questions, bug reports (there are many bugs right now)?
@@ -76,30 +92,18 @@ Email Chris Wellons at
 <a href="mailto:&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;">&#099;&#099;&#119;&#049;&#050;&#057;&#064;&#112;&#115;&#117;&#046;&#101;&#100;&#117;</a>
 </p>
 <!-- *************************************************************** -->
+<a name="summary" id="summary" />
 <h2>Summary</h2>
 <h3>Current Limitations</h3>
 <p>
-Currently, the tool can only handle 24-bit (8-bit depth) RGB,
-non-alpha PNG's. As I develop the tool, it will gain the ability to
-embed data in any type of PNG (using larger areas of the image for
-images with lower bit depth). The tool and library will also have
-built in error checking to make sure that the image has not been
-damaged. An image may be damaged if it was converted to a lossy image
-format (such as JPEG). The PNG archives are also currently limited to
-the architecture of the machine. For example, you cannot create a PNG
-archive on a PowerPC and extract it on a Pentium. This will be fixed
-soon.
+Currently, the tool can only handle 24-bit (8-bit depth) RGB and RGBA,
+PNG's. The tool will eventually gain the ability to embed data into
+any type of PNG (using larger areas of the image for images with lower
+bit depth).
 </p>
 <p>
-Eventually (before 1.0) the tool and library will also be able to pull
-image data from anywhere in the image. This means that you can embed
-the data in a nice frame that is relevant to the data (see Sean's
-Gameplay Mechanics page).
-</p>
-<p>
-Also, the library is currently not separated as a library from the
-<code>pngarch</code> tool. As the library is developed, this will be
-done.
+The library is currently not separated as a library from the
+<code>pngarch</code> tool. This will be done before 1.0.
 </p>
 <h3>Why PNG?</h3>
 <p>
@@ -115,31 +119,49 @@ so this does not count)
 </p>
 <p>
 All data is stored in the visible pixels of the image; no data is
-stored in the image meta data. This means that you could take a
-screenshot (assuming that your display is at a minimum bit depth for
-that image) and extract the data directly from the screenshot.
+stored in the image meta data. This means that in most cases, you
+could take a screenshot and extract the data directly from the
+screenshot.
 </p>
 <!-- *************************************************************** -->
 <h2>Usage</h2>
 <p>
 Currently, the tool can archive any file inside of a PNG file and
-extract that file from the PNG into an identical file. More options
-will be available as I continue working on the tool. Here are the
+extract that file from the PNG into an identical file. Here are the
 current command line switches,
 </p>
 <pre>
-Usage: pngarch [options] [files]
+Usage: ./pngarch [OPTION ...] [FILE ...]
 
 Options:
 
-  -c, --create     Create data PNG
-  -x, --extract    Extract data PNG
-  -w, --width      Width of the image (default 250)
-  -h, --height     Height of the image (default 0)
-  -t, --list       List internal filename
-  -V, --verbose    Enable verbose output
-  -v, --version    Display version information
-  -h, --help       Display this help text
+  -c, --create            Create PNG Archive
+  -x, --extract           Extract PNG Archive
+  -v, --verbose           Enable verbose output
+  -b, --brief             Disable warnings
+  -o, --output            Set the output file name (invokes -i)
+  -X, --x-position        Distance of data from image left
+  -Y, --y-position        Distance of data from image top
+  -V, --version           Display version information
+  -!, --help              Display this help text
+
+Archiving Options:
+
+  -n, --no-checksum       Do not add checksum to data
+  -W, --data-width        Width of data in the image
+  -H, --data-height       Height of data in the image
+  -w, --img-width         Width of the image
+  -h, --img-height        Height of the image
+  -d, --bit-depth         PNG bit depth (8)
+  -t, --color-type        PNG color type (rgb, palette)
+  -i, --insert            Insert data into exiting images
+
+Extraction Options:
+
+  -l, --list              List internal filename
+  -n, --no-checksum       Ignore bad checksums
+  --auto-detect           Attempt to find image data automatically. (default)
+  --no-auto-detect        Do not attempt to find image data automatically.
 </pre>
 <p>
 The filename of the file archived in the PNG is stored within the PNG
@@ -151,10 +173,14 @@ $ pngarch my_file.txt
 </pre>
 <p>
 will create a PNG file <code>my_file.txt.png</code>. Even if this file
-is renamed, the PNG will know what file to extract to (-V for verbose),
+is renamed, the PNG will know what file to extract to (-V is for
+verbose),
 </p>
 <pre>
 $ mv my_file.txt.png a_file.txt.png
+$ 
+$ pngarch -l my_file.txt.png
+my_file.txt.png
 $ pngarch a_file.txt.png
 Extracted my_file.txt
 $ 
@@ -165,6 +191,7 @@ The interface is very similar to <a href="http://www.gzip.org/">
 will figure it out based on the file extension.
 </p>
 <!-- *************************************************************** -->
+<a name="download" id="download" />
 <h2>Download</h2>
 <p>
 All downloads, including <a href="http://en.wikipedia.org/wiki/MD5">
@@ -218,27 +245,16 @@ svn co https://opensvn.csie.org/datpng/trunk datpng
 To build from the repository, you will need <a
 href="http://www.gnu.org/software/autoconf/"> autoconf </a> and <a
 href="http://www.gnu.org/software/automake/"> automake </a>. To get
-the build environment up to date, run the command,
+the build environment up to date, run the bootstrap script,
 </p>
 <pre>
-autoreconf -i
+./bootstrap
 </pre>
 <p>
 Then you can go through the regular build process.
 </p>
 <!-- *************************************************************** -->
-<h2>Server Note</h2>
-<p>
-I have just found a bug in Apache 1.3.33 on Solaris (or at least a
-misconfiguration). I haven't tested to see if this bug exists in more
-recent versions yet. Apache tries to determine the file type when
-serving the file. When it sees a <code>.gz</code> extension, it thinks
-that the file is encoded in <code>gzip</code>. It does this even when
-the file's last extension is not <code>.gz</code>. For this reason,
-all gzipped and PNG archived file names are modified to have
-<code>_gz</code> instead. This will not effect the unzipped name,
-however, as the real file name is stored in the PNG file.
-</p>
+<a name="copy" id="copy" />
 <h2>Copying</h2>
 <!--
 ;; Use this to insert the date below (in Emacs).
@@ -248,7 +264,7 @@ however, as the real file name is stored in the PNG file.
   (insert (format-time-string "%Y-%m-%d")))
 -->
 <p>
-This document last updated on 2007-06-18.
+This document last updated on 2007-07-01.
 </p>
 <p>
 Copyright &copy; 2007 Christopher Wellons
