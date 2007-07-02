@@ -1,0 +1,8 @@
+- Add (and design) palette support.
+- Add 2, 4, 16 bit support.
+- Add automatic image extension.
+  - Add pngarch boilerplate option.
+- Add greyscale support.
+- Separate datpng library.
+- Write texinfo document.
+- Make webpage look better.
