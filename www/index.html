@@ -173,15 +173,15 @@ $ pngarch my_file.txt
 </pre>
 <p>
 will create a PNG file <code>my_file.txt.png</code>. Even if this file
-is renamed, the PNG will know what file to extract to (-V is for
-verbose),
+is renamed, the PNG will know what file to extract to (-v is for
+verbose, -l for list),
 </p>
 <pre>
 $ mv my_file.txt.png a_file.txt.png
 $ 
 $ pngarch -l my_file.txt.png
 my_file.txt.png
-$ pngarch a_file.txt.png
+$ pngarch -v a_file.txt.png
 Extracted my_file.txt
 $ 
 </pre>
