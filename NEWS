@@ -33,6 +33,9 @@ PNG Archiver
 	palette images has begun, but it is incomplete. Only 8-bit
 	images of these types are supported at the moment.
 
+	* The license was upgraded to GPLv3. This is reflected in the
+	COPYING file.
+
 0.1 (06-18-07)
 	* This is the first working prototype. It produces the
 	simplest possible PNG archive: no checksum, support for only
