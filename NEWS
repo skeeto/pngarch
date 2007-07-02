@@ -1,0 +1,40 @@
+PNG Archiver
+
+0.2 (07-01-07)
+	* There is no longer a default image width. All images are
+	automatically made square.
+
+	* Now includes a header that does error checking and allows
+	for a checksum (default). This header may not be readable by
+	future versions.
+
+	* All header information is stored in network (bigendian)
+	order. This means that datpng now works across differing
+ 	architectures.	
+
+	* As stated above, a checksum feature has been added. It
+	checks for data integrity, which may be compromised by lossy
+	format conversions.
+
+	* Data can be placed at any position in the PNG image. This
+	allows for decoration of the data with meta data. To retrieve
+	this information, the exact location of the information does
+	not need to be known. An autoscanner automatically finds the
+	data.
+
+	* An autoscan feature has been added. It attempts to find data
+	in a PNG image automatically. It needs to be made more
+	efficient, however. Autoscan works more reliably when a
+	checksum is present.
+
+	* A man page has been written for pngarch.
+
+	* Support for RGBA (RGB with alpha) has been added. Support for
+	palette images has begun, but it is incomplete. Only 8-bit
+	images of these types are supported at the moment.
+
+0.1 (06-18-07)
+	* This is the first working prototype. It produces the
+	simplest possible PNG archive: no checksum, support for only
+	24-bit PNGs. This format will not be readable by future
+	versions.
